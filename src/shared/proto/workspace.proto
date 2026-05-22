@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package workspace;
+
+service WorkspaceService {
+  rpc GetWorkspace (WorkspaceRequest) returns (WorkspaceResponse);
+  rpc CreateWorkspace (CreateWorkspaceRequest) returns (CreateWorkspaceResponse);
+  rpc UpdateWorkspace (UpdateWorkspaceRequest) returns (UpdateWorkspaceResponse);
+  rpc DeleteWorkspace (DeleteWorkspaceRequest) returns (DeleteWorkspaceResponse);
+}
+
+message WorkspaceRequest {
+  string id = 1;
+}
+
+message WorkspaceResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message CreateWorkspaceRequest {
+  string name = 1;
+  string description = 2;
+}
+
+message CreateWorkspaceResponse {
+  string id = 1;
+}
+
+message UpdateWorkspaceRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message UpdateWorkspaceResponse {
+  string id = 1;
+}
+
+message DeleteWorkspaceRequest {
+  string id = 1;
+}
+
+message DeleteWorkspaceResponse {
+  bool deleted = 1;
+}

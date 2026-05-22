@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package common;
+
+message ClientContext {
+  string ipAddress = 1;
+  string userAgent = 2;
+  string platform = 3;
+  string deviceType = 4;
+  string deviceFingerPrint = 5;
+  string deviceName = 6;
+
+  string devicePlatform = 7;
+  int32 deviceHardwareConcurrency = 8;
+  string deviceTimezone = 9;
+  string deviceLanguage = 10;
+
+  string deviceToken = 11;
+  string clientVersion = 12;
+  string timezone = 13;
+
+  string requestId = 14;
+  string sessionId = 15;
+}

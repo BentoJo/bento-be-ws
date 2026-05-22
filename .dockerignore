@@ -1,0 +1,40 @@
+node_modules
+dist
+build
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# IDE
+.idea
+.vscode
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests & Coverage
+coverage
+.nyc_output
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs
+README.md
+*.md
+!package.json
+
+# Temp
+.temp
+.tmp

@@ -1,0 +1,32 @@
+services:
+  ws-db:
+    image: postgres:18
+    container_name: ws-db
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - backend-network
+  ws-service:
+    build:
+      context: .
+      target: runner
+    container_name: ws-service
+    restart: always
+    ports:
+      - '50054:50054'
+    env_file:
+      - .env
+    networks:
+      - backend-network
+
+volumes:
+  postgres_data:
+
+networks:
+  backend-network:
+    external: true
