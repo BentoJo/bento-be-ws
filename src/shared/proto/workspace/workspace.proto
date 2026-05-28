@@ -2,10 +2,12 @@ syntax = "proto3";
 
 package workspace;
 
-import "common.proto";
 import "google/protobuf/timestamp.proto";
+import "src/shared/proto/common.proto";
 
 service WorkspaceService {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  
   rpc CreateWorkspace(CreateWorkspaceRequest) returns (WorkspaceResponse);
 
   rpc GetWorkspace(GetWorkspaceRequest) returns (WorkspaceResponse);
@@ -39,7 +41,11 @@ service WorkspaceService {
 // NOTE: WorkspaceActionResponse and PaginationMeta were moved to common.proto.
 
 // Create workspace
+message HealthCheckRequest{}
 
+message HealthCheckResponse {
+  string status = 1;
+}
 message CreateWorkspaceRequest {
   string name = 1;
   optional string logoUrl = 2;

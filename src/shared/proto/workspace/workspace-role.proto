@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package workspaceRoles;
 
-import "common.proto";
+import "src/shared/proto/common.proto";
 
 service WorkspaceRoleService {
   rpc GetWorkspaceRoleFromAuthZ(GetWorkspaceRoleFromAuthZRequest)

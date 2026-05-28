@@ -13,14 +13,14 @@ import { workspaceInviteStatusEnum } from '../enums';
 export const workspaces = pgTable(
   'workspaces',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     name: varchar('name', { length: 255 }).notNull(),
     logoUrl: text('logo_url'),
     logoKey: text('logo_key'),
     ownerUserId: uuid('owner_user_id').notNull(),
     createdBy: uuid('created_by').notNull(),
     deletedAt: timestamp('deleted_at'),
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at'),
   },
   (table) => [index('workspaces_owner_user_id_idx').on(table.ownerUserId)],
@@ -29,7 +29,7 @@ export const workspaces = pgTable(
 export const workspaceRoles = pgTable(
   'workspace_roles',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -47,7 +47,7 @@ export const workspaceRoles = pgTable(
 export const workspaceMembers = pgTable(
   'workspace_members',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -71,7 +71,7 @@ export const workspaceMembers = pgTable(
 export const workspaceInvites = pgTable(
   'workspace_invites',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -92,7 +92,7 @@ export const workspaceInvites = pgTable(
 export const teams = pgTable(
   'teams',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -111,7 +111,7 @@ export const teams = pgTable(
 export const teamMembers = pgTable(
   'team_members',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
