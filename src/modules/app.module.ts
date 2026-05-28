@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
+import { WorkspaceModule } from './workspace/workspace.module';
 
 @Module({
-  imports: [],
+  imports: [WorkspaceModule],
 })
 export class AppModule {}

@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { HealthService } from './services/health.service';
 import { CreateWorkspaceService } from './services/create.workspace.service';
 import type { CreateWorkspaceRequest } from './types';
@@ -18,7 +18,10 @@ export class WorkspaceController {
   }
 
   @GrpcMethod('WorkspaceService', 'CreateWorkspace')
-  createWorkspace(data: CreateWorkspaceRequest, @GrpcUser() user: GrpcUser) {
+  createWorkspace(
+    @Payload() data: CreateWorkspaceRequest,
+    @GrpcUser() user: GrpcUser,
+  ) {
     return this.createWorkspaceService.createWorkspace(data, user);
   }
 }

@@ -5,8 +5,8 @@ import { AuthzService } from './authz.service';
 
 const protoPath =
   process.env.AUTHZ_PROTO_PATH ||
-  join(__dirname, '../../shared/proto/authz/authz.proto');
-const url = process.env.AUTHZ_URL || 'authz:50053';
+  join(process.cwd(), 'src/shared/proto/authz/authz.proto');
+const url = process.env.AUTHZ_URL || 'authz-service:50053';
 
 @Module({
   imports: [

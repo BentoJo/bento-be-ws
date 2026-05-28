@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthzService } from '../authz/authz.service';
+import { AuthzModule } from '../authz/authz.module';
 import { WorkspaceController } from './wrorkspace.controller';
 import { HealthService } from './services/health.service';
 import { CreateWorkspaceService } from './services/create.workspace.service';
+import { WorkspaceFuncs } from '../../shared/func/workspace';
 
 @Module({
-  imports: [AuthzService],
+  imports: [AuthzModule],
   controllers: [WorkspaceController],
-  providers: [AuthzService, CreateWorkspaceService, HealthService],
+  providers: [WorkspaceFuncs, CreateWorkspaceService, HealthService],
 })
 export class WorkspaceModule {}

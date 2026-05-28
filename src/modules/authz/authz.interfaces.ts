@@ -14,4 +14,6 @@ export interface AuthorizationService {
   ListPermissions(request: any): Observable<any>;
   SearchRoles(request: any): Observable<any>;
   BatchCheckPermissions(request: any): Observable<any>;
+  GetStaticRoles(request: any): Observable<any>;
+  CreateSystemRoles(request: any): Observable<any>;
 }

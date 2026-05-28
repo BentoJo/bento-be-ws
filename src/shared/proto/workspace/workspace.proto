@@ -3,7 +3,7 @@ syntax = "proto3";
 package workspace;
 
 import "google/protobuf/timestamp.proto";
-import "src/shared/proto/common.proto";
+import "../common.proto";
 
 service WorkspaceService {
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);

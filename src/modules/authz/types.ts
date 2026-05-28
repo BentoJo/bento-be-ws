@@ -155,3 +155,22 @@ export interface BatchCheckPermissionsRequest {
 export interface BatchCheckPermissionsResponse {
   results: Record<string, boolean>;
 }
+
+export interface StaticRole {
+  id: string;
+  name: string;
+}
+
+export interface GetStaticRolesResponse {
+  roles: StaticRole[];
+}
+
+export interface CreateSystemRolesRequest {
+  scopeType: RoleScopeType;
+  scopeId: string;
+  createdBy: string;
+}
+
+export interface CreateSystemRolesResponse {
+  roles: Role[];
+}
