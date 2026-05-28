@@ -1,0 +1,236 @@
+syntax = "proto3";
+
+package teams;
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+service TeamService {
+  rpc CreateTeam(CreateTeamRequest)
+      returns (TeamResponse);
+
+  rpc GetTeam(GetTeamRequest)
+      returns (TeamResponse);
+
+  rpc UpdateTeam(UpdateTeamRequest)
+      returns (TeamResponse);
+
+  rpc DeleteTeam(DeleteTeamRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RestoreTeam(RestoreTeamRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ArchiveTeam(ArchiveTeamRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc UnarchiveTeam(UnarchiveTeamRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListTeams(ListTeamsRequest)
+      returns (ListTeamsResponse);
+
+  rpc AddTeamMember(AddTeamMemberRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RemoveTeamMember(RemoveTeamMemberRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListTeamMembers(ListTeamMembersRequest)
+      returns (ListTeamMembersResponse);
+
+  rpc BulkAddTeamMembers(BulkAddTeamMembersRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc BulkRemoveTeamMembers(BulkRemoveTeamMembersRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListMemberTeams(ListMemberTeamsRequest)
+      returns (ListMemberTeamsResponse);
+
+  rpc ResolveEffectiveTeamMembers(ResolveEffectiveTeamMembersRequest)
+      returns (ResolveEffectiveTeamMembersResponse);
+}
+
+message CreateTeamRequest {
+  string workspaceId = 1;
+
+  string name = 2;
+
+  optional string description = 3;
+
+  optional string icon = 4;
+}
+
+message TeamResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string name = 3;
+
+  optional string description = 4;
+
+  optional string icon = 5;
+
+  bool isArchived = 6;
+
+  google.protobuf.Timestamp createdAt = 7;
+
+  optional google.protobuf.Timestamp updatedAt = 8;
+}
+
+message GetTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message UpdateTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  optional string name = 3;
+
+  optional string description = 4;
+
+  optional string icon = 5;
+}
+
+message DeleteTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message RestoreTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message ArchiveTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message UnarchiveTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message ListTeamsRequest {
+  string workspaceId = 1;
+
+  int32 page = 2;
+
+  int32 limit = 3;
+
+  optional string search = 4;
+
+  optional bool includeArchived = 5;
+}
+
+message TeamListItem {
+  string id = 1;
+
+  string name = 2;
+
+  optional string icon = 3;
+
+  bool isArchived = 4;
+
+  int32 membersCount = 5;
+}
+
+message ListTeamsResponse {
+  repeated TeamListItem teams = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+message AddTeamMemberRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  string userId = 3;
+}
+
+message RemoveTeamMemberRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  string userId = 3;
+}
+
+message BulkAddTeamMembersRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  repeated string userIds = 3;
+}
+
+message BulkRemoveTeamMembersRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  repeated string userIds = 3;
+}
+message ListTeamMembersRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  int32 page = 3;
+
+  int32 limit = 4;
+
+  optional string search = 5;
+}
+
+message TeamMemberListItem {
+  string userId = 1;
+
+  google.protobuf.Timestamp joinedAt = 2;
+}
+
+message ListTeamMembersResponse {
+  repeated TeamMemberListItem members = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+message ListMemberTeamsRequest {
+  string workspaceId = 1;
+
+  string userId = 2;
+}
+
+message MemberTeamListItem {
+  string teamId = 1;
+
+  string name = 2;
+
+  optional string icon = 3;
+}
+
+message ListMemberTeamsResponse {
+  repeated MemberTeamListItem teams = 1;
+}
+
+message ResolveEffectiveTeamMembersRequest {
+  string workspaceId = 1;
+
+  repeated string teamIds = 2;
+}
+
+message ResolveEffectiveTeamMembersResponse {
+  repeated string userIds = 1;
+}

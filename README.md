@@ -97,9 +97,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
-# Docker Compose for AuthZ Service
+# Docker Compose for Workspace Service
 
-This `docker-compose.yml` file sets up a PostgreSQL database and an AuthZ service using NestJS. The database is configured to run on port 5433, and the AuthZ service is set to run on port 50053. Environment variables are loaded from a `.env` file for both services.
+This `docker-compose.yml` file sets up a PostgreSQL database and an Workspace service using NestJS. The database is configured to run on port 5433, and the Workspace service is set to run on port 50053. Environment variables are loaded from a `.env` file for both services.
 
 - build the containers using this command:
 
@@ -108,8 +108,9 @@ docker-compose up --build -d
 ```
 
 - show the server logs
+
 ```bash
-docker logs -f authz-service
+docker logs -f ws-service
 ```
 
 - stop the containers using this command:
@@ -121,16 +122,20 @@ docker-compose down
 - open the project terminal and run the following command to run the tests:
 
 ```bash
-docker compose exec authz-service sh
+docker compose exec ws-service sh
+  // to migrate the database schema apply this commands after running the latest command:
+    - npx drizzle-kit generate
+    - npx drizzle-kit push
 ```
 
 - open the Database terminal and run the following command to connect to the database:
 
 ```bash
-docker exec -it authz-db psql -U authz_service -d authz
+docker exec -it ws-db psql -U ws_service -d ws
 ```
 
 - to show tables
+
 ```bash
 \dt
 ```

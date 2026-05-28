@@ -1,0 +1,183 @@
+syntax = "proto3";
+
+package workspaceMembers;
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+service WorkspaceMemberService {
+  rpc InviteWorkspaceMember(InviteWorkspaceMemberRequest)
+      returns (WorkspaceInviteResponse);
+
+  rpc AcceptWorkspaceInvite(AcceptWorkspaceInviteRequest)
+      returns (WorkspaceMembershipResponse);
+
+  rpc RejectWorkspaceInvite(RejectWorkspaceInviteRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RemoveWorkspaceMember(RemoveWorkspaceMemberRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc GetWorkspaceMember(GetWorkspaceMemberRequest)
+      returns (WorkspaceMemberResponse);
+
+  rpc ListWorkspaceMembers(ListWorkspaceMembersRequest)
+      returns (ListWorkspaceMembersResponse);
+
+  rpc UpdateWorkspaceMemberRole(UpdateWorkspaceMemberRoleRequest)
+      returns (WorkspaceMemberResponse);
+
+  rpc GetWorkspaceMemberRole(GetWorkspaceMemberRoleRequest)
+      returns (WorkspaceMemberRoleResponse);
+
+  rpc ValidateWorkspaceMembership(ValidateWorkspaceMembershipRequest)
+      returns (ValidateWorkspaceMembershipResponse);
+}
+
+//
+// Invite Member
+//
+
+message InviteWorkspaceMemberRequest {
+  string workspaceId = 1;
+
+  string email = 2;
+
+  string authzRoleId = 3;
+
+  optional string message = 4;
+}
+
+message WorkspaceInviteResponse {
+  string inviteId = 1;
+
+  string workspaceId = 2;
+
+  string email = 3;
+
+  string authzRoleId = 4;
+
+  string token = 5;
+
+  google.protobuf.Timestamp expiresAt = 6;
+
+  string invitedBy = 7;
+
+  workspace.common.WorkspaceInviteStatus status = 8;
+
+  google.protobuf.Timestamp createdAt = 9;
+}
+
+message AcceptWorkspaceInviteRequest {
+  string token = 1;
+}
+
+message WorkspaceMembershipResponse {
+  string membershipId = 1;
+
+  string workspaceId = 2;
+
+  string userId = 3;
+
+  string authzRoleId = 4;
+
+  google.protobuf.Timestamp joinedAt = 5;
+}
+
+message RejectWorkspaceInviteRequest {
+  string token = 1;
+}
+
+//
+// Membership Management
+//
+
+message RemoveWorkspaceMemberRequest {
+  string workspaceId = 1;
+
+  string memberId = 2;
+}
+
+message GetWorkspaceMemberRequest {
+  string workspaceId = 1;
+
+  string memberId = 2;
+}
+
+message WorkspaceMemberResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string userId = 3;
+
+  string authzRoleId = 4;
+
+  google.protobuf.Timestamp joinedAt = 5;
+}
+
+message ListWorkspaceMembersRequest {
+  string workspaceId = 1;
+
+  int32 page = 2;
+
+  int32 limit = 3;
+
+  optional string search = 4;
+}
+
+message WorkspaceMemberListItem {
+  string id = 1;
+
+  string userId = 2;
+
+  string authzRoleId = 3;
+
+  google.protobuf.Timestamp joinedAt = 4;
+}
+
+message ListWorkspaceMembersResponse {
+  repeated WorkspaceMemberListItem members = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+//
+// Role Management
+//
+
+message UpdateWorkspaceMemberRoleRequest {
+  string workspaceId = 1;
+
+  string memberId = 2;
+
+  string authzRoleId = 3;
+}
+
+message GetWorkspaceMemberRoleRequest {
+  string workspaceId = 1;
+
+  string memberId = 2;
+}
+
+message WorkspaceMemberRoleResponse {
+  string authzRoleId = 1;
+}
+
+//
+// Membership Validation
+//
+
+message ValidateWorkspaceMembershipRequest {
+  string workspaceId = 1;
+
+  string userId = 2;
+}
+
+message ValidateWorkspaceMembershipResponse {
+  bool isMember = 1;
+
+  optional string membershipId = 2;
+
+  optional string authzRoleId = 3;
+}

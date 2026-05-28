@@ -13,9 +13,7 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       package: ['workspace'],
-      protoPath: [
-        join(__dirname, '../src/shared/proto/workspa.proto'),
-      ],
+      protoPath: [join(__dirname, '../src/shared/proto/workspace.proto')],
       url: `0.0.0.0:${grpcPort}`,
       loader: {
         keepCase: true,

@@ -1,7 +1,6 @@
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-import { ValidationResult } from "../types/validations/general";
+import { ValidationResult } from './general';
 
 /**
  * A validator function that takes a value and returns a ValidationResult.
@@ -44,7 +43,7 @@ export interface FieldsValidationResult {
  * ```
  */
 export const validateFields = (
-  data: Record<string, any>,
+  data: Record<string, unknown>,
   schema: ValidationSchema,
 ): FieldsValidationResult => {
   const errors: Record<string, string> = {};

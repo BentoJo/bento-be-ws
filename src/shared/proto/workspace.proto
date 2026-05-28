@@ -2,46 +2,176 @@ syntax = "proto3";
 
 package workspace;
 
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+
 service WorkspaceService {
-  rpc GetWorkspace (WorkspaceRequest) returns (WorkspaceResponse);
-  rpc CreateWorkspace (CreateWorkspaceRequest) returns (CreateWorkspaceResponse);
-  rpc UpdateWorkspace (UpdateWorkspaceRequest) returns (UpdateWorkspaceResponse);
-  rpc DeleteWorkspace (DeleteWorkspaceRequest) returns (DeleteWorkspaceResponse);
+  rpc CreateWorkspace(CreateWorkspaceRequest) returns (WorkspaceResponse);
+
+  rpc GetWorkspace(GetWorkspaceRequest) returns (WorkspaceResponse);
+
+  rpc UpdateWorkspace(UpdateWorkspaceRequest) returns (WorkspaceResponse);
+
+  rpc DeleteWorkspace(DeleteWorkspaceRequest) returns (workspace.common.ActionResponse);
+
+  rpc RestoreWorkspace(RestoreWorkspaceRequest) returns (workspace.common.ActionResponse);
+
+  rpc ArchiveWorkspace(ArchiveWorkspaceRequest) returns (workspace.common.ActionResponse);
+
+  rpc UnarchiveWorkspace(UnarchiveWorkspaceRequest) returns (workspace.common.ActionResponse);
+
+  rpc TransferWorkspaceOwnership(TransferWorkspaceOwnershipRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListUserWorkspaces(ListUserWorkspacesRequest)
+      returns (ListUserWorkspacesResponse);
+
+  rpc GetWorkspaceOverview(GetWorkspaceOverviewRequest)
+      returns (WorkspaceOverviewResponse);
+
+  rpc GetWorkspaceStats(GetWorkspaceStatsRequest)
+      returns (WorkspaceStatsResponse);
+
+  rpc RemoveWorkspaceLogo(RemoveWorkspaceLogoRequest)
+      returns (WorkspaceResponse);
 }
 
-message WorkspaceRequest {
-  string id = 1;
+// NOTE: WorkspaceActionResponse and PaginationMeta were moved to common.proto.
+
+// Create workspace
+
+message CreateWorkspaceRequest {
+  string name = 1;
+  optional string logoUrl = 2;
 }
 
 message WorkspaceResponse {
   string id = 1;
+
   string name = 2;
-  string description = 3;
+
+  optional string logoUrl = 3;
+
+  string ownerId = 4;
+
+  bool isArchived = 5;
+
+  google.protobuf.Timestamp createdAt = 6;
+
+  optional google.protobuf.Timestamp updatedAt = 7;
 }
 
-message CreateWorkspaceRequest {
-  string name = 1;
-  string description = 2;
+// Get
+
+message GetWorkspaceRequest {
+  string workspaceId = 1;
 }
 
-message CreateWorkspaceResponse {
-  string id = 1;
-}
+// Update
 
 message UpdateWorkspaceRequest {
-  string id = 1;
-  string name = 2;
-  string description = 3;
+  string workspaceId = 1;
+
+  optional string name = 2;
+
+  optional string logoUrl = 3;
 }
 
-message UpdateWorkspaceResponse {
-  string id = 1;
-}
+// Delete
 
 message DeleteWorkspaceRequest {
-  string id = 1;
+  string workspaceId = 1;
 }
 
-message DeleteWorkspaceResponse {
-  bool deleted = 1;
+// Restore
+message RestoreWorkspaceRequest {
+  string workspaceId = 1;
 }
+
+// Archive
+message ArchiveWorkspaceRequest {
+  string workspaceId = 1;
+}
+
+message UnarchiveWorkspaceRequest {
+  string workspaceId = 1;
+}
+
+// Transfer ownership
+message TransferWorkspaceOwnershipRequest {
+  string workspaceId = 1;
+
+  string newOwnerId = 2;
+}
+
+// List Users
+message ListUserWorkspacesRequest {
+  int32 page = 1;
+
+  int32 limit = 2;
+
+  optional string search = 3;
+
+  optional bool includeArchived = 4;
+}
+
+message WorkspaceListItem {
+  string id = 1;
+
+  string name = 2;
+
+  optional string logoUrl = 3;
+
+  bool isArchived = 4;
+
+  string roleId = 5;
+}
+
+message ListUserWorkspacesResponse {
+  repeated WorkspaceListItem workspaces = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+//Overview 
+message GetWorkspaceOverviewRequest {
+  string workspaceId = 1;
+}
+
+// Edit ===================================================
+message WorkspaceOverviewResponse {
+  int32 totalBoards = 1;
+
+  int32 totalMembers = 2;
+
+  int32 totalTeams = 3;
+}
+
+//Stats
+
+// Note =========================================
+message GetWorkspaceStatsRequest {
+  string workspaceId = 1;
+}
+
+message WorkspaceStatsResponse {
+  int32 totalBoards = 1;
+
+  int32 totalColumns = 2;
+
+  int32 totalCards = 3;
+
+  int32 completedCards = 4;
+
+  int32 archivedCards = 5;
+
+  int32 totalMembers = 6;
+
+  int32 totalTeams = 7;
+}
+
+
+message RemoveWorkspaceLogoRequest {
+  string workspaceId = 1;
+}
+

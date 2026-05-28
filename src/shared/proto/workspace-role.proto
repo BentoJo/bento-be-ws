@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package workspaceRoles;
+
+import "common.proto";
+
+service WorkspaceRoleService {
+  rpc GetWorkspaceRoleFromAuthZ(GetWorkspaceRoleFromAuthZRequest)
+      returns (WorkspaceRoleReferenceResponse);
+
+  rpc GetWorkspaceRolesPermissionsFromAuthZ(
+      GetWorkspaceRolesPermissionsFromAuthZRequest)
+      returns (WorkspaceRolePermissionsResponse);
+
+  rpc DeleteWorkspaceRole(DeleteWorkspaceRoleReferenceRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc GetWorkspaceMemberRole(GetWorkspaceMemberRoleRequest)
+      returns (GetWorkspaceMemberRoleResponse);
+
+  rpc CheckPermission(CheckPermissionRequest)
+      returns (CheckPermissionResponse);
+}
+
+
+message WorkspaceRoleReferenceResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string authzRoleId = 3;
+
+  string roleName = 4;
+
+  bool isSystemRole = 5;
+}
+
+// delete roles reference
+
+message DeleteWorkspaceRoleReferenceRequest {
+  string workspaceId = 1;
+
+  string authzRoleId = 2;
+}
+
+// get roles from AuthZ
+message GetWorkspaceRoleFromAuthZRequest {
+  string workspaceId = 1;
+
+  string authzRoleId = 2;
+}
+
+// Get Role Permissions 
+message GetWorkspaceRolesPermissionsFromAuthZRequest {
+  string workspaceId = 1;
+
+  string authzRoleId = 2;
+}
+
+message WorkspaceRolePermissionsResponse {
+  repeated string permissions = 1;
+}
+
+message GetWorkspaceMemberRoleRequest {
+  string workspaceId = 1;
+
+  string userId = 2;
+}
+
+message GetWorkspaceMemberRoleResponse {
+  string authzRoleId = 1;
+}
+
+
+message CheckPermissionRequest {
+  string workspaceId = 1;
+
+  string scopeType = 2;
+
+  string scopeId = 3;
+
+  string resourceType = 4;
+
+  string action = 5;
+
+  string userId = 6;
+}
+
+message CheckPermissionResponse {
+  bool allowed = 1;
+}

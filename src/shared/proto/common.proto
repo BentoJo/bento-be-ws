@@ -1,24 +1,81 @@
 syntax = "proto3";
 
-package common;
+package workspace.common;
 
-message ClientContext {
-  string ipAddress = 1;
-  string userAgent = 2;
-  string platform = 3;
-  string deviceType = 4;
-  string deviceFingerPrint = 5;
-  string deviceName = 6;
+// Shared enums and DTOs used across Workspace Service protos.
 
-  string devicePlatform = 7;
-  int32 deviceHardwareConcurrency = 8;
-  string deviceTimezone = 9;
-  string deviceLanguage = 10;
+import "google/protobuf/timestamp.proto";
 
-  string deviceToken = 11;
-  string clientVersion = 12;
-  string timezone = 13;
+// ---------------------------
+// ENUMS (from WS.dbml)
+// ---------------------------
 
-  string requestId = 14;
-  string sessionId = 15;
+enum WorkspaceInviteStatus {
+  WORKSPACE_INVITE_STATUS_UNSPECIFIED = 0;
+  WORKSPACE_INVITE_STATUS_PENDING = 1;
+  WORKSPACE_INVITE_STATUS_ACCEPTED = 2;
+  WORKSPACE_INVITE_STATUS_EXPIRED = 3;
+  WORKSPACE_INVITE_STATUS_REVOKED = 4;
+}
+
+enum BoardVisibility {
+  BOARD_VISIBILITY_UNSPECIFIED = 0;
+  BOARD_VISIBILITY_PUBLIC = 1;
+  BOARD_VISIBILITY_PRIVATE = 2;
+}
+
+enum CardPriority {
+  CARD_PRIORITY_UNSPECIFIED = 0;
+  CARD_PRIORITY_LOW = 1;
+  CARD_PRIORITY_MEDIUM = 2;
+  CARD_PRIORITY_HIGH = 3;
+  CARD_PRIORITY_URGENT = 4;
+}
+
+enum WatchableType {
+  WATCHABLE_TYPE_UNSPECIFIED = 0;
+  WATCHABLE_TYPE_BOARD = 1;
+  WATCHABLE_TYPE_COLUMN = 2;
+  WATCHABLE_TYPE_CARD = 3;
+}
+
+enum LabelType {
+  LABEL_TYPE_UNSPECIFIED = 0;
+  LABEL_TYPE_DEFAULT = 1;
+  LABEL_TYPE_BUG = 2;
+  LABEL_TYPE_FEATURE = 3;
+  LABEL_TYPE_ENHANCEMENT = 4;
+}
+
+enum AssigneeType {
+  ASSIGNEE_TYPE_UNSPECIFIED = 0;
+  ASSIGNEE_TYPE_MEMBER = 1;
+  ASSIGNEE_TYPE_TEAM = 2;
+}
+
+// ---------------------------
+// SHARED TYPES
+// ---------------------------
+
+message PaginationMeta {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 totalPages = 4;
+}
+
+message ActionResponse {
+  bool success = 1;
+  string message = 2;
+
+  // Optional resource identifier relevant to the mutation (e.g., cardId).
+  optional string resourceId = 3;
+}
+
+message Watcher {
+  // The watching user.
+  string userId = 1;
+
+  // When the watch record was created.
+  google.protobuf.Timestamp watchedAt = 2;
 }

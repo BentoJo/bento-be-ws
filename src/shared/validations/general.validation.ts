@@ -1,4 +1,4 @@
-import { ValidationResult } from '../types/validations/general';
+import { ValidationResult } from './general';
 
 // ─── Generic Validators ──────────────────────────────────────────────────────
 
