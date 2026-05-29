@@ -5,7 +5,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 
 async function bootstrap() {
-  const grpcPort = process.env.GRPC_PORT || '50052';
+  const grpcPort = process.env.GRPC_PORT || '50054';
 
   const app = await NestFactory.create(AppModule);
 
@@ -13,7 +13,9 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       package: ['workspace'],
-      protoPath: [join(__dirname, '../src/shared/proto/workspace.proto')],
+      protoPath: [
+        join(__dirname, '../src/shared/proto/workspace/workspace.proto'),
+      ],
       url: `0.0.0.0:${grpcPort}`,
       loader: {
         keepCase: true,

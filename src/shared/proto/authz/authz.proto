@@ -1,0 +1,278 @@
+syntax = "proto3";
+package authz;
+
+service AuthorizationService {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+
+  rpc GetStaticRoles(GetStaticRolesRequest) returns (GetStaticRolesResponse);
+
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+
+  rpc CheckPermission(CheckPermissionRequest) returns (CheckPermissionResponse);
+
+  rpc CreateRole(CreateRoleRequest)
+  returns (CreateRoleResponse);
+
+  rpc UpdateRole(UpdateRoleRequest)
+  returns (UpdateRoleResponse);
+
+  rpc DeleteRole(DeleteRoleRequest)
+  returns (DeleteRoleResponse);
+
+  rpc AssignPermissionsToRole(AssignPermissionsRequest)
+  returns (AssignPermissionsResponse);
+
+  rpc RemovePermissionsFromRole(RemovePermissionsRequest)
+  returns (RemovePermissionsResponse);
+
+  rpc GetRolePermissions(GetRolePermissionsRequest)
+  returns (GetRolePermissionsResponse);
+
+  // High-priority endpoints from gap analysis
+  rpc GetRolesByIds(GetRolesByIdsRequest) returns (GetRolesByIdsResponse);
+
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
+
+  rpc SearchRoles(SearchRolesRequest) returns (SearchRolesResponse);
+
+  rpc BatchCheckPermissions(BatchCheckPermissionsRequest) returns (BatchCheckPermissionsResponse);
+
+  rpc CreateSystemRoles(CreateSystemRolesRequest) returns (CreateSystemRolesResponse);
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
+}
+
+message GetStaticRolesRequest {
+  string scopeId = 1;
+}
+
+message StaticRole {
+  string id   = 1;
+  string name = 2;
+}
+
+message GetStaticRolesResponse {
+  repeated StaticRole roles = 1;
+}
+
+message ListRolesRequest {
+  string scopeType = 1;
+
+  string scopeId = 2;
+
+  bool includeSystemRoles = 3;
+}
+
+message Role {
+  string id = 1;
+
+  string name = 2;
+
+  bool isSystem = 3;
+
+  bool isEditable = 4;
+
+  bool isDeletable = 5;
+}
+
+message ListRolesResponse {
+  repeated Role roles = 1;
+}
+
+message CheckPermissionRequest {
+  string roleId = 1;
+
+  string permission = 2;
+
+  string scopeId = 3;
+}
+
+message CheckPermissionResponse {
+  bool allowed = 1;
+}
+
+message CreateRoleRequest {
+  string name = 1;
+
+  string scopeType = 2;
+
+  string scopeId = 3;
+
+  bool isSystem = 4;
+
+  string createdBy = 5;
+}
+
+message CreateRoleResponse {
+  string roleId = 1;
+}
+
+message UpdateRoleRequest {
+  string roleId = 1;
+
+  optional string name = 2;
+
+  optional bool isEditable = 3;
+
+  optional bool isDeletable = 4;
+
+  string scopeId = 5;
+}
+
+message UpdateRoleResponse {
+  bool success = 1;
+}
+
+message DeleteRoleRequest {
+  string roleId  = 1;
+  string scopeId = 2;
+}
+
+message DeleteRoleResponse {
+  bool success = 1;
+}
+
+message AssignPermissionsRequest {
+  string roleId = 1;
+
+  repeated string permissionIds = 2;
+
+  string scopeId = 3;
+}
+
+message AssignPermissionsResponse {
+  bool success = 1;
+}
+
+message RemovePermissionsRequest {
+  string roleId = 1;
+
+  string scopeId = 2;
+
+  repeated string permissionIds = 3;
+}
+
+message RemovePermissionsResponse {
+  bool success = 1;
+}
+
+message GetRolePermissionsRequest {
+  string roleId = 1;
+}
+
+message GetRolePermissionsResponse {
+  repeated string permissions = 1;
+}
+
+message GetRolesByIdsRequest {
+  repeated string roleIds         = 1;
+  string          scope           = 2;
+  string          scopeId         = 3;
+  bool            includeArchived = 4;
+}
+
+message UserRole {
+  string            id           = 1;
+  string            name         = 2;
+  repeated string   permissions  = 3;
+  map<string, bool> capabilities = 4;
+  bool              isSystem     = 5;
+}
+
+message GetRolesByIdsResponse {
+  string            scope   = 1;
+  string            scopeId = 2;
+  repeated UserRole roles   = 3;
+}
+
+message ListPermissionsRequest {}
+
+message Permission {
+  string id   = 1;
+  string name = 2;
+  // string resource = 3;
+  // string description = 5;
+  // repeated string tags = 6;
+}
+
+message ListPermissionsResponse {
+  repeated Permission permissions = 1;
+  int32               totalCount  = 2;
+}
+
+message SearchRolesRequest {
+  string scope         = 1;
+  string scopeId       = 2;
+  string query         = 3;
+  bool   includeSystem = 4;
+  int32  limit         = 5;
+}
+
+message SearchRolesResponse {
+  repeated Role roles      = 1;
+  int32         totalFound = 2;
+}
+
+message BatchCheckPermissionsRequest {
+  string          roleId      = 1;
+  repeated string permissions = 2;
+}
+
+message BatchCheckPermissionsResponse {
+  map<string, bool> results = 1;
+}
+
+message CreateSystemRolesRequest {
+  string scopeType = 1;
+  string scopeId   = 2;
+  string createdBy = 3;
+}
+
+message CreateSystemRolesResponse {
+  repeated Role roles = 1;
+}
+
+/*
+ service WorkspaceRoleService {
+ rpc CreateWorkspaceRoleReference(CreateWorkspaceRoleReferenceRequest)
+ returns (WorkspaceRoleReferenceResponse);
+
+ rpc GetWorkspaceRoleReferences(GetWorkspaceRoleReferencesRequest)
+ returns (ListWorkspaceRoleReferencesResponse);
+
+ rpc GetWorkspaceRoleFromAuthZ(GetWorkspaceRoleFromAuthZRequest)
+ returns (WorkspaceRoleReferenceResponse);
+
+ rpc GetWorkspaceRolesPermissionsFromAuthZ(
+ GetWorkspaceRolesPermissionsFromAuthZRequest)
+ returns (WorkspaceRolePermissionsResponse);
+
+ rpc SyncWorkspaceRolesFromAuthZ(SyncWorkspaceRolesFromAuthZRequest)
+ returns (workspace.common.ActionResponse);
+
+ rpc DeleteWorkspaceRoleReference(DeleteWorkspaceRoleReferenceRequest)
+ returns (workspace.common.ActionResponse);
+
+ rpc ResolveWorkspaceMemberRole(ResolveWorkspaceMemberRoleRequest)
+ returns (ResolveWorkspaceMemberRoleResponse);
+
+ rpc ResolveEffectiveBoardRole(ResolveEffectiveBoardRoleRequest)
+ returns (ResolveEffectiveBoardRoleResponse);
+
+ rpc ResolveEffectivePermissions(ResolveEffectivePermissionsRequest)
+ returns (ResolveEffectivePermissionsResponse);
+
+ rpc CheckPermission(CheckPermissionRequest)
+ returns (CheckPermissionResponse);
+
+ rpc InvalidatePermissionCache(InvalidatePermissionCacheRequest)
+ returns (workspace.common.ActionResponse);
+
+ rpc WarmPermissionCache(WarmPermissionCacheRequest)
+ returns (workspace.common.ActionResponse);
+ }
+ */

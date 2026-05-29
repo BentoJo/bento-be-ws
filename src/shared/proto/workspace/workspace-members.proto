@@ -3,7 +3,7 @@ syntax = "proto3";
 package workspaceMembers;
 
 import "google/protobuf/timestamp.proto";
-import "common.proto";
+import "src/shared/proto/common.proto";
 
 service WorkspaceMemberService {
   rpc InviteWorkspaceMember(InviteWorkspaceMemberRequest)
