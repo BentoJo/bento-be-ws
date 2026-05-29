@@ -87,13 +87,9 @@ export interface ListRolesResponse {
 }
 
 export interface CheckPermissionRequest {
-  userId: string;
   roleId: string;
   permission: string;
-  scopeType: string;
   scopeId: string;
-  resourceType: string;
-  resourceId: string;
 }
 
 export interface CheckPermissionResponse {

@@ -34,14 +34,21 @@ service AuthorizationService {
   rpc BatchCheckPermissions(BatchCheckPermissionsRequest) returns (BatchCheckPermissionsResponse);
 
   rpc GetStaticRoles(GetStaticRolesRequest) returns (GetStaticRolesResponse);
-
   rpc CreateSystemRoles(CreateSystemRolesRequest) returns (CreateSystemRolesResponse);
 }
 
-message HealthCheckRequest { }
+message HealthCheckRequest {}
 
 message HealthCheckResponse {
   string status = 1;
+}
+message GetStaticRolesRequest {}
+message StaticRole {
+  string id   = 1;
+  string name = 2;
+}
+message GetStaticRolesResponse {
+  repeated StaticRole roles = 1;
 }
 
 message ListRolesRequest {
@@ -69,19 +76,11 @@ message ListRolesResponse {
 }
 
 message CheckPermissionRequest {
-  string userId = 1;
+  string roleId = 1;
 
-  string roleId = 2;
+  string permission = 2;
 
-  string permission = 3;
-
-  string scopeType = 4;
-
-  string scopeId = 5;
-
-  string resourceType = 6;
-
-  string resourceId = 7;
+  string scopeId = 3;
 }
 
 message CheckPermissionResponse {
@@ -210,17 +209,6 @@ message BatchCheckPermissionsRequest {
 
 message BatchCheckPermissionsResponse {
   map<string, bool> results = 1;
-}
-
-message GetStaticRolesRequest {}
-
-message StaticRole {
-  string id   = 1;
-  string name = 2;
-}
-
-message GetStaticRolesResponse {
-  repeated StaticRole roles = 1;
 }
 
 message CreateSystemRolesRequest {
