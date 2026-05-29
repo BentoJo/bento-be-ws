@@ -29,7 +29,7 @@ service WorkspaceService {
       returns (ListUserWorkspacesResponse);
 
   rpc GetWorkspaceOverview(GetWorkspaceOverviewRequest)
-      returns (WorkspaceOverviewResponse);
+      returns (WorkspaceOverviewResponse); // Done
 
   rpc GetWorkspaceStats(GetWorkspaceStatsRequest)
       returns (WorkspaceStatsResponse);
