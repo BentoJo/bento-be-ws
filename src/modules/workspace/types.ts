@@ -16,3 +16,7 @@ export interface WorkspaceResponse {
 
   updatedAt?: Date;
 }
+
+export interface GetWorkspaceRequest {
+  workspaceId: string;
+}

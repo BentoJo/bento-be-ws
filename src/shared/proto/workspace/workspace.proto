@@ -6,9 +6,9 @@ import "google/protobuf/timestamp.proto";
 import "../common.proto";
 
 service WorkspaceService {
-  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
-  
-  rpc CreateWorkspace(CreateWorkspaceRequest) returns (WorkspaceResponse);
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse); // Done
+
+  rpc CreateWorkspace(CreateWorkspaceRequest) returns (WorkspaceResponse); // Done
 
   rpc GetWorkspace(GetWorkspaceRequest) returns (WorkspaceResponse);
 
