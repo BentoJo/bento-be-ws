@@ -97,12 +97,15 @@ export class InviteWorkspaceMemberService {
         });
       }
 
-      const url = `${process.env.FRONTEND_URL}/accept-invite?token=${token}`;
+      const acc_url = `${process.env.FRONTEND_URL}/accept-invite?token=${token}`;
+      const rej_url = `${process.env.FRONTEND_URL}/reject-invite?token=${token}`;
       const subject =
         'Workspace Invitation - You have been invited to join a workspace';
       const htmlContent = inviteHtml
-        .replace('{{url}}', url)
-        .replace('{{email}}', data.email);
+        .replace('{{accept_url}}', acc_url)
+        .replace('{{reject_url}}', rej_url)
+        .replace('{{email}}', data.email)
+        .replace('{{recipient_url}}', data.email);
 
       await sendEmail(data.email, subject, htmlContent).catch(console.error);
 
