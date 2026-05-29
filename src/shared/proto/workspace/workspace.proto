@@ -12,18 +12,18 @@ service WorkspaceService {
 
   rpc GetWorkspace(GetWorkspaceRequest) returns (WorkspaceResponse); // Done
 
-  rpc UpdateWorkspace(UpdateWorkspaceRequest) returns (WorkspaceResponse);
+  rpc UpdateWorkspace(UpdateWorkspaceRequest) returns (WorkspaceResponse); // Done!
 
-  rpc DeleteWorkspace(DeleteWorkspaceRequest) returns (workspace.common.ActionResponse);
+  rpc DeleteWorkspace(DeleteWorkspaceRequest) returns (workspace.common.ActionResponse); // Done
 
-  rpc RestoreWorkspace(RestoreWorkspaceRequest) returns (workspace.common.ActionResponse);
+  rpc RestoreWorkspace(RestoreWorkspaceRequest) returns (workspace.common.ActionResponse); // Done
 
-  rpc ArchiveWorkspace(ArchiveWorkspaceRequest) returns (workspace.common.ActionResponse);
+  rpc ArchiveWorkspace(ArchiveWorkspaceRequest) returns (workspace.common.ActionResponse); // Later
 
-  rpc UnarchiveWorkspace(UnarchiveWorkspaceRequest) returns (workspace.common.ActionResponse);
+  rpc UnarchiveWorkspace(UnarchiveWorkspaceRequest) returns (workspace.common.ActionResponse); // Later
 
   rpc TransferWorkspaceOwnership(TransferWorkspaceOwnershipRequest)
-      returns (workspace.common.ActionResponse);
+      returns (workspace.common.ActionResponse); // Done
 
   rpc ListUserWorkspaces(ListUserWorkspacesRequest)
       returns (ListUserWorkspacesResponse);
@@ -147,12 +147,33 @@ message GetWorkspaceOverviewRequest {
 // Edit ===================================================
 message WorkspaceOverviewResponse {
   int32 totalBoards = 1;
-
   int32 totalMembers = 2;
-
   int32 totalTeams = 3;
+
+  int32 totalCards = 4;
+  int32 completedCards = 5;
+  int32 overdueCards = 6;
+
+  repeated BoardPreview boardsPreview = 7;
+
+  Permissions permissions = 8;
+
+  string lastUpdatedAt = 9;
 }
 
+message BoardPreview {
+  string id = 1;
+  string name = 2;
+  string visibility = 3;
+  int32 columnsCount = 4;
+  int32 cardCount = 5;
+}
+
+message Permissions {
+  bool canCreateBoard = 1;
+  bool canInviteMembers = 2;
+  bool canEditWorkspace = 3;
+}
 //Stats
 
 // Note =========================================

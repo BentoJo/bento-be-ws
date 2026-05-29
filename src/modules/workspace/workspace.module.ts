@@ -7,6 +7,9 @@ import { UpdateWorkspaceService } from './services/update.workspace.service';
 import { WorkspaceFuncs } from '../../shared/func/workspace';
 import { GetWorkspaceService } from './services/get-workspace.service';
 import { WorkspaceMembersFuncs } from '../../shared/func/workspace-members';
+import { GetWorkspaceOverviewService } from './services/get-workspace-overview.service';
+import { DeleteWorkspaceService } from './services/delete-workspace.service';
+import { RestoreWorkspaceService } from './services/restore-workspace.service';
 
 @Module({
   imports: [AuthzModule],
@@ -15,9 +18,12 @@ import { WorkspaceMembersFuncs } from '../../shared/func/workspace-members';
     WorkspaceFuncs,
     CreateWorkspaceService,
     UpdateWorkspaceService,
+    GetWorkspaceOverviewService,
     GetWorkspaceService,
     HealthService,
     WorkspaceMembersFuncs,
+    DeleteWorkspaceService,
+    RestoreWorkspaceService,
   ],
 })
 export class WorkspaceModule {}

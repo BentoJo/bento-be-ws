@@ -67,9 +67,6 @@ message PaginationMeta {
 message ActionResponse {
   bool success = 1;
   string message = 2;
-
-  // Optional resource identifier relevant to the mutation (e.g., cardId).
-  optional string resourceId = 3;
 }
 
 message Watcher {
