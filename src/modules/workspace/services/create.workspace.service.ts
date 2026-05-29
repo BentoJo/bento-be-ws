@@ -34,88 +34,81 @@ export class CreateWorkspaceService {
       });
     }
 
-    const staticRoles = await firstValueFrom(this.authZ.getStaticRoles());
-
-    const newWorkspace = await db.transaction(async (tx) => {
-      const newWorkspace = await this.workspaceFuncs.create(
-        {
-          name: data.name,
-          ownerUserId: user.id,
-          createdBy: user.id,
-          logoUrl: data.logoUrl ?? null,
-          logoKey: null,
-        },
-        tx,
-      );
-
-      if (!newWorkspace) {
-        throw new RpcException({
-          code: GrpcStatus.INTERNAL,
-          message: 'Failed to create workspace',
-        });
-      }
-
-      if (staticRoles.roles.length === 0) {
-        throw new RpcException({
-          code: GrpcStatus.INTERNAL,
-          message: 'No static roles found in authz service',
-        });
-      }
-
-      await tx.insert(workspaceRoles).values(
-        staticRoles.roles.map((role) => ({
-          workspaceId: newWorkspace.id,
-          authzRoleId: role.id,
-          isSystem: true,
-          createdBy: user.id,
-        })),
-      );
-
-      const ownerRole = staticRoles.roles.find((r) => r.name === 'OWNER');
-      if (!ownerRole) {
-        throw new RpcException({
-          code: GrpcStatus.INTERNAL,
-          message: 'Owner role not found',
-        });
-      }
-
-      await tx.insert(workspaceMembers).values({
-        workspaceId: newWorkspace.id,
-        userId: user.id,
-        authzRoleId: ownerRole.id,
-      });
-
-      return {
-        id: newWorkspace.id,
-        name: newWorkspace.name,
-        logoUrl: newWorkspace.logoUrl ?? undefined,
-        ownerId: newWorkspace.ownerUserId,
-        createdAt: newWorkspace.createdAt,
-        updatedAt: newWorkspace.updatedAt ?? undefined,
-      };
+    const newWorkspace = await this.workspaceFuncs.create({
+      name: data.name,
+      ownerUserId: user.id,
+      createdBy: user.id,
+      logoUrl: data.logoUrl ?? null,
+      logoKey: null,
     });
 
-    try {
-      await firstValueFrom(
-        this.authZ.createSystemRoles({
-          scopeType: 'workspace',
-          scopeId: newWorkspace.id,
-          createdBy: user.id,
-        }),
-      );
-    } catch (error) {
-      const grpcError = error as { code?: number };
+    const authz = await firstValueFrom(
+      this.authZ.createSystemRoles({
+        scopeType: 'workspace',
+        scopeId: newWorkspace.id,
+        createdBy: user.id,
+      }),
+    );
 
-      if (grpcError.code === GrpcStatus.UNIMPLEMENTED) {
-        this.logger.warn(
-          'authz AuthorizationService.CreateSystemRoles is not implemented; skipping role bootstrap',
-        );
-      } else {
-        throw error;
-      }
+    if (!authz || !authz.roles) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Failed to create system roles for workspace',
+      });
     }
 
-    return newWorkspace;
+    if (!newWorkspace) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Failed to create workspace',
+      });
+    }
+
+    const staticRolesResponse = await firstValueFrom(
+      this.authZ.getStaticRoles({
+        scopeId: newWorkspace.id,
+      }),
+    );
+    const staticRoles = staticRolesResponse?.roles ?? [];
+
+    if (staticRoles.length === 0) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'No static roles found in authz service',
+      });
+    }
+
+    await db.insert(workspaceRoles).values(
+      staticRoles.map((role) => ({
+        workspaceId: newWorkspace.id,
+        authzRoleId: role.id,
+        isSystem: true,
+        createdBy: user.id,
+      })),
+    );
+
+    const ownerRole = staticRoles.find((r) => r.name === 'OWNER');
+    if (!ownerRole) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Owner role not found',
+      });
+    }
+
+    await db.insert(workspaceMembers).values({
+      workspaceId: newWorkspace.id,
+      userId: user.id,
+      authzRoleId: ownerRole.id,
+    });
+
+    return {
+      id: newWorkspace.id,
+      name: newWorkspace.name,
+      logoUrl: newWorkspace.logoUrl ?? undefined,
+      ownerId: newWorkspace.ownerUserId,
+      createdAt: newWorkspace.createdAt,
+      updatedAt: newWorkspace.updatedAt ?? undefined,
+    };
   }
 
   private validateInput(data: CreateWorkspaceRequest): void {

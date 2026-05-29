@@ -3,7 +3,11 @@ package authz;
 
 service AuthorizationService {
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+
+  rpc GetStaticRoles(GetStaticRolesRequest) returns (GetStaticRolesResponse);
+
   rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+
   rpc CheckPermission(CheckPermissionRequest) returns (CheckPermissionResponse);
 
   rpc CreateRole(CreateRoleRequest)
@@ -33,7 +37,6 @@ service AuthorizationService {
 
   rpc BatchCheckPermissions(BatchCheckPermissionsRequest) returns (BatchCheckPermissionsResponse);
 
-  rpc GetStaticRoles(GetStaticRolesRequest) returns (GetStaticRolesResponse);
   rpc CreateSystemRoles(CreateSystemRolesRequest) returns (CreateSystemRolesResponse);
 }
 
@@ -42,11 +45,16 @@ message HealthCheckRequest {}
 message HealthCheckResponse {
   string status = 1;
 }
-message GetStaticRolesRequest {}
+
+message GetStaticRolesRequest {
+  string scopeId = 1;
+}
+
 message StaticRole {
   string id   = 1;
   string name = 2;
 }
+
 message GetStaticRolesResponse {
   repeated StaticRole roles = 1;
 }
@@ -111,6 +119,8 @@ message UpdateRoleRequest {
   optional bool isEditable = 3;
 
   optional bool isDeletable = 4;
+
+  string scopeId = 5;
 }
 
 message UpdateRoleResponse {
@@ -118,7 +128,8 @@ message UpdateRoleResponse {
 }
 
 message DeleteRoleRequest {
-  string roleId = 1;
+  string roleId  = 1;
+  string scopeId = 2;
 }
 
 message DeleteRoleResponse {
@@ -129,6 +140,8 @@ message AssignPermissionsRequest {
   string roleId = 1;
 
   repeated string permissionIds = 2;
+
+  string scopeId = 3;
 }
 
 message AssignPermissionsResponse {
@@ -138,7 +151,9 @@ message AssignPermissionsResponse {
 message RemovePermissionsRequest {
   string roleId = 1;
 
-  repeated string permissionIds = 2;
+  string scopeId = 2;
+
+  repeated string permissionIds = 3;
 }
 
 message RemovePermissionsResponse {

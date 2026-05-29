@@ -2,7 +2,12 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { HealthService } from './services/health.service';
 import { CreateWorkspaceService } from './services/create.workspace.service';
-import type { CreateWorkspaceRequest, GetWorkspaceRequest } from './types';
+import { UpdateWorkspaceService } from './services/update.workspace.service';
+import type {
+  CreateWorkspaceRequest,
+  GetWorkspaceRequest,
+  UpdateWorkspaceRequest,
+} from './types';
 import { GrpcUser } from '../../shared/decorators/meta.decorator';
 import { RequirePermission } from '../../shared/decorators/permission.decorator';
 import { PermissionsGuard } from '../../shared/Guards/permissions.guard';
@@ -14,6 +19,7 @@ export class WorkspaceController {
     private readonly healthService: HealthService,
     private readonly createWorkspaceService: CreateWorkspaceService,
     private readonly getWorkspaceService: GetWorkspaceService,
+    private readonly updateWorkspaceService: UpdateWorkspaceService,
   ) {}
 
   @UseGuards(PermissionsGuard)
@@ -37,5 +43,13 @@ export class WorkspaceController {
     @GrpcUser() user: GrpcUser,
   ) {
     return this.getWorkspaceService.getWorkspace(data, user);
+  }
+
+  @GrpcMethod('WorkspaceService', 'UpdateWorkspace')
+  updateWorkspace(
+    @Payload() data: UpdateWorkspaceRequest,
+    @GrpcUser() user: GrpcUser,
+  ) {
+    return this.updateWorkspaceService.updateWorkspace(data, user);
   }
 }

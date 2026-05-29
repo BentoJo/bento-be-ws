@@ -62,6 +62,32 @@ export class WorkspaceFuncs {
     return row;
   }
 
+  async update(
+    id: string,
+    patch: Partial<{
+      name: string;
+      logoUrl: string | null;
+      logoKey: string | null;
+      ownerUserId: string;
+    }>,
+  ) {
+    const updateObj: Partial<typeof workspaces.$inferInsert> = {};
+    if (patch.name !== undefined) updateObj.name = patch.name;
+    if (patch.logoUrl !== undefined) updateObj.logoUrl = patch.logoUrl;
+    if (patch.logoKey !== undefined) updateObj.logoKey = patch.logoKey;
+    if (patch.ownerUserId !== undefined)
+      updateObj.ownerUserId = patch.ownerUserId;
+    updateObj.updatedAt = new Date();
+
+    const [row] = await db
+      .update(workspaces)
+      .set(updateObj)
+      .where(eq(workspaces.id, id))
+      .returning();
+
+    return row;
+  }
+
   // async listByOwner(
   //   ownerUserId: string,
   //   opts?: { limit?: number; offset?: number },

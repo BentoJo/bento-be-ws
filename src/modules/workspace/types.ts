@@ -3,6 +3,16 @@ export interface CreateWorkspaceRequest {
   logoUrl?: string;
 }
 
+export interface UpdateWorkspaceRequest {
+  workspaceId: string;
+
+  name?: string;
+
+  logoUrl?: string | null;
+
+  logoKey?: string | null;
+}
+
 export interface WorkspaceResponse {
   id: string;
 

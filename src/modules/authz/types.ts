@@ -28,6 +28,7 @@ export interface UpdateRoleRequest {
   name?: string;
   isEditable?: boolean;
   isDeletable?: boolean;
+  scopeId: string;
 }
 
 export interface UpdateRoleResponse {
@@ -36,6 +37,7 @@ export interface UpdateRoleResponse {
 
 export interface DeleteRoleRequest {
   roleId: string;
+  scopeId: string;
 }
 
 export interface DeleteRoleResponse {
@@ -44,6 +46,7 @@ export interface DeleteRoleResponse {
 
 export interface AssignPermissionsRequest {
   roleId: string;
+  scopeId: string;
   permissionIds: string[];
 }
 
@@ -53,6 +56,7 @@ export interface AssignPermissionsResponse {
 
 export interface RemovePermissionsRequest {
   roleId: string;
+  scopeId: string;
   permissionIds: string[];
 }
 
@@ -88,8 +92,8 @@ export interface ListRolesResponse {
 
 export interface CheckPermissionRequest {
   roleId: string;
-  permission: string;
   scopeId: string;
+  permission: string;
 }
 
 export interface CheckPermissionResponse {
@@ -146,10 +150,21 @@ export interface SearchRolesResponse {
 export interface BatchCheckPermissionsRequest {
   roleId: string;
   permissions: string[];
+  scopeId: string;
 }
 
 export interface BatchCheckPermissionsResponse {
   results: Record<string, boolean>;
+}
+
+export interface CreateSystemRolesRequest {
+  scopeType: RoleScopeType;
+  scopeId: string;
+  createdBy: string;
+}
+
+export interface CreateSystemRolesResponse {
+  roles: Role[];
 }
 
 export interface StaticRole {
@@ -161,12 +176,6 @@ export interface GetStaticRolesResponse {
   roles: StaticRole[];
 }
 
-export interface CreateSystemRolesRequest {
-  scopeType: RoleScopeType;
+export interface GetStaticRolesRequest {
   scopeId: string;
-  createdBy: string;
-}
-
-export interface CreateSystemRolesResponse {
-  roles: Role[];
 }

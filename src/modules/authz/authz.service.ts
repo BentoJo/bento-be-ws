@@ -29,6 +29,7 @@ import type {
   GetStaticRolesResponse,
   CreateSystemRolesRequest,
   CreateSystemRolesResponse,
+  GetStaticRolesRequest,
 } from './types';
 
 @Injectable()
@@ -127,9 +128,11 @@ export class AuthzService implements OnModuleInit {
     ) as Observable<BatchCheckPermissionsResponse>;
   }
 
-  getStaticRoles(): Observable<GetStaticRolesResponse> {
+  getStaticRoles(
+    data: GetStaticRolesRequest,
+  ): Observable<GetStaticRolesResponse> {
     return this.service.GetStaticRoles(
-      {},
+      data,
     ) as Observable<GetStaticRolesResponse>;
   }
 

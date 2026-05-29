@@ -10,7 +10,7 @@ service WorkspaceService {
 
   rpc CreateWorkspace(CreateWorkspaceRequest) returns (WorkspaceResponse); // Done
 
-  rpc GetWorkspace(GetWorkspaceRequest) returns (WorkspaceResponse);
+  rpc GetWorkspace(GetWorkspaceRequest) returns (WorkspaceResponse); // Done
 
   rpc UpdateWorkspace(UpdateWorkspaceRequest) returns (WorkspaceResponse);
 
