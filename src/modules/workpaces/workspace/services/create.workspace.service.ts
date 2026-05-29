@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { validateName, validateRequired } from '../../../shared/validations';
 import { RpcException } from '@nestjs/microservices';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { Logger } from '@nestjs/common';
-import db from '../../../shared/configs/db.config';
+import { WorkspaceFuncs } from '../../../../shared/func/workspace';
+import { AuthzService } from '../../../authz/authz.service';
+import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 import { CreateWorkspaceRequest, WorkspaceResponse } from '../types';
-import { WorkspaceFuncs } from '../../../shared/func/workspace';
-import { GrpcUser } from '../../../shared/decorators/meta.decorator';
-import { AuthzService } from '../../authz/authz.service';
+import { workspaceMembers, workspaceRoles } from '../../../../shared/db/schema';
+import db from '../../../../shared/configs/db.config';
 import { firstValueFrom } from 'rxjs';
-import { workspaceMembers, workspaceRoles } from '../../../shared/db/schema';
+import { validateName, validateRequired } from '../../../../shared/validations';
 
 @Injectable()
 export class CreateWorkspaceService {

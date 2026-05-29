@@ -1,4 +1,4 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { HealthService } from './services/health.service';
 import { CreateWorkspaceService } from './services/create.workspace.service';
@@ -11,12 +11,11 @@ import type {
   GetWorkspaceOverviewRequest,
 } from './types';
 import { GetWorkspaceOverviewService } from './services/get-workspace-overview.service';
-import { GrpcUser } from '../../shared/decorators/meta.decorator';
-import { RequirePermission } from '../../shared/decorators/permission.decorator';
-import { PermissionsGuard } from '../../shared/Guards/permissions.guard';
+
 import { DeleteWorkspaceService } from './services/delete-workspace.service';
 import { RestoreWorkspaceService } from './services/restore-workspace.service';
 import { GetWorkspaceService } from './services/get-workspace.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
 
 @Controller()
 export class WorkspaceController {
@@ -30,8 +29,6 @@ export class WorkspaceController {
     private readonly getWorkspaceOverviewService: GetWorkspaceOverviewService,
   ) {}
 
-  @UseGuards(PermissionsGuard)
-  @RequirePermission('workspace:workspace:manage')
   @GrpcMethod('WorkspaceService', 'HealthCheck')
   healthCheck() {
     return { status: this.healthService.healthCheck() };

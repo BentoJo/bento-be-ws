@@ -2,17 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { firstValueFrom } from 'rxjs';
-import { WorkspaceFuncs } from '../../../shared/func/workspace';
-import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
-import { AuthzService } from '../../authz/authz.service';
+import { WorkspaceFuncs } from '../../../../shared/func/workspace';
+import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
+import { AuthzService } from '../../../authz/authz.service';
 import {
   validateName,
   validateUrl,
   validateRequired,
   validateUUID,
-} from '../../../shared/validations';
+} from '../../../../shared/validations';
 
-import type { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import type { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 import type { UpdateWorkspaceRequest, WorkspaceResponse } from '../types';
 
 @Injectable()

@@ -6,22 +6,42 @@ import "src/shared/proto/common.proto";
 
 service WorkspaceRoleService {
   rpc GetWorkspaceRoleFromAuthZ(GetWorkspaceRoleFromAuthZRequest)
-      returns (WorkspaceRoleReferenceResponse);
+  returns (WorkspaceRoleReferenceResponse);
 
   rpc GetWorkspaceRolesPermissionsFromAuthZ(
-      GetWorkspaceRolesPermissionsFromAuthZRequest)
-      returns (WorkspaceRolePermissionsResponse);
+  GetWorkspaceRolesPermissionsFromAuthZRequest)
+  returns (WorkspaceRolePermissionsResponse);
 
   rpc DeleteWorkspaceRole(DeleteWorkspaceRoleReferenceRequest)
-      returns (workspace.common.ActionResponse);
+  returns (workspace.common.ActionResponse);
 
   rpc GetWorkspaceMemberRole(GetWorkspaceMemberRoleRequest)
-      returns (GetWorkspaceMemberRoleResponse);
+  returns (GetWorkspaceMemberRoleResponse);
 
   rpc CheckPermission(CheckPermissionRequest)
-      returns (CheckPermissionResponse);
+  returns (CheckPermissionResponse);
+
+  rpc GetWorkspaceRoles(GetWorkspaceRolesRequest)
+  returns (GetWorkspaceRolesResponse);
 }
 
+message GetWorkspaceRolesRequest {
+  string workspaceId = 1;
+}
+
+message GetWorkspaceRolesResponse
+{
+  string                                  workspaceId = 1;
+  repeated WorkspaceRoleReferenceResponse roles       = 2;
+}
+
+message WorkspaceRole {
+  string authzRoleId = 3;
+
+  string roleName = 4;
+
+  bool isSystemRole = 5;
+}
 
 message WorkspaceRoleReferenceResponse {
   string id = 1;
@@ -50,7 +70,7 @@ message GetWorkspaceRoleFromAuthZRequest {
   string authzRoleId = 2;
 }
 
-// Get Role Permissions 
+// Get Role Permissions
 message GetWorkspaceRolesPermissionsFromAuthZRequest {
   string workspaceId = 1;
 
@@ -70,7 +90,6 @@ message GetWorkspaceMemberRoleRequest {
 message GetWorkspaceMemberRoleResponse {
   string authzRoleId = 1;
 }
-
 
 message CheckPermissionRequest {
   string workspaceId = 1;

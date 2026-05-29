@@ -4,16 +4,16 @@ import { status as GrpcStatus } from '@grpc/grpc-js';
 
 import { firstValueFrom } from 'rxjs';
 
-import db from '../../../shared/configs/db.config';
+import db from '../../../../shared/configs/db.config';
 
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
-import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
-import { AuthzService } from '../../authz/authz.service';
+import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
+import { AuthzService } from '../../../authz/authz.service';
 
-import { validateUUID } from '../../../shared/validations';
+import { validateUUID } from '../../../../shared/validations';
 
-import type { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import type { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 import type {
   GetWorkspaceOverviewRequest,
   GetWorkspaceOverviewResponse,
@@ -26,7 +26,7 @@ import {
   teams,
   boardColumns,
   cards,
-} from '../../../shared/db/schema';
+} from '../../../../shared/db/schema';
 
 @Injectable()
 export class GetWorkspaceOverviewService {
