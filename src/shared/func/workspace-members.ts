@@ -2,11 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import db from '../configs/db.config';
-import { workspaceMembers } from '../db/modules/workspace';
+import { workspaceInvites, workspaceMembers } from '../db/modules/workspace';
 
 export interface CheckWorkspaceMemberInput {
   workspaceId: string;
   userId: string;
+}
+
+export interface CheckWorkspaceMemberByEmailInput {
+  workspaceId: string;
+  email: string;
 }
 
 type DB = NodePgDatabase;
@@ -42,5 +47,24 @@ export class WorkspaceMembersFuncs {
       .limit(1);
 
     return member;
+  }
+
+  async checkWorkspaceMemberByEmail(input: CheckWorkspaceMemberByEmailInput) {
+    const invite = await db
+      .select()
+      .from(workspaceInvites)
+      .where(
+        and(
+          eq(workspaceInvites.workspaceId, input.workspaceId),
+          eq(workspaceInvites.email, input.email),
+          eq(workspaceInvites.status, 'accepted'),
+        ),
+      )
+      .limit(1)
+      .then((res) => res[0]);
+
+    if (invite) {
+      return invite;
+    }
   }
 }

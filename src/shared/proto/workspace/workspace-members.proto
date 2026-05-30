@@ -3,36 +3,76 @@ syntax = "proto3";
 package workspaceMembers;
 
 import "google/protobuf/timestamp.proto";
-import "src/shared/proto/common.proto";
+import "../common.proto";
 
 service WorkspaceMemberService {
   rpc InviteWorkspaceMember(InviteWorkspaceMemberRequest)
-      returns (WorkspaceInviteResponse);
+  returns (WorkspaceInviteResponse);
 
   rpc AcceptWorkspaceInvite(AcceptWorkspaceInviteRequest)
-      returns (WorkspaceMembershipResponse);
+  returns (WorkspaceMembershipResponse);
 
   rpc RejectWorkspaceInvite(RejectWorkspaceInviteRequest)
-      returns (workspace.common.ActionResponse);
+  returns (workspace.common.ActionResponse);
 
   rpc RemoveWorkspaceMember(RemoveWorkspaceMemberRequest)
-      returns (workspace.common.ActionResponse);
+  returns (workspace.common.ActionResponse);
 
   rpc GetWorkspaceMember(GetWorkspaceMemberRequest)
-      returns (WorkspaceMemberResponse);
+  returns (WorkspaceMemberResponse);
 
   rpc ListWorkspaceMembers(ListWorkspaceMembersRequest)
-      returns (ListWorkspaceMembersResponse);
+  returns (ListWorkspaceMembersResponse);
+
+  rpc ListWorkspaceInvites(ListWorkspaceInvitesRequest)
+  returns (ListWorkspaceInvitesResponse);
 
   rpc UpdateWorkspaceMemberRole(UpdateWorkspaceMemberRoleRequest)
-      returns (WorkspaceMemberResponse);
+  returns (WorkspaceMemberResponse);
 
   rpc GetWorkspaceMemberRole(GetWorkspaceMemberRoleRequest)
-      returns (WorkspaceMemberRoleResponse);
+  returns (WorkspaceMemberRoleResponse);
 
   rpc ValidateWorkspaceMembership(ValidateWorkspaceMembershipRequest)
-      returns (ValidateWorkspaceMembershipResponse);
+  returns (ValidateWorkspaceMembershipResponse);
 }
+
+message ListWorkspaceInvitesRequest {
+  string workspaceId = 1;
+
+  int32 page = 2;
+
+  int32 limit = 3;
+
+  optional string status = 4;
+
+  optional string search = 5;
+}
+
+message WorkspaceInviteListItem {
+  string id = 1 ;
+
+  string workspaceId = 2;
+
+  string email = 3;
+
+  string authzRoleId = 4;
+
+  string status = 5;
+
+  google.protobuf.Timestamp expiresAt = 6;
+
+  google.protobuf.Timestamp createdAt = 7;
+}
+
+message ListWorkspaceInvitesResponse {
+  repeated WorkspaceInviteListItem invites = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+//
+// Invite Member
+//
 
 //
 // Invite Member

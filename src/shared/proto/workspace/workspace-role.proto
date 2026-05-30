@@ -32,7 +32,15 @@ message GetWorkspaceRolesRequest {
 message GetWorkspaceRolesResponse
 {
   string                                  workspaceId = 1;
-  repeated WorkspaceRoleReferenceResponse roles       = 2;
+  repeated WorkspaceRole roles       = 2;
+}
+
+message WorkspaceRole {
+  string authzRoleId = 3;
+
+  string roleName = 4;
+
+  bool isSystemRole = 5;
 }
 
 message WorkspaceRole {

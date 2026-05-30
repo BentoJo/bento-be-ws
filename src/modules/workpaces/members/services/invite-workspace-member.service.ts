@@ -11,8 +11,12 @@ import {
   validateUUID,
 } from '../../../../shared/validations';
 import db from '../../../../shared/configs/db.config';
-import { workspaceInvites, workspaces } from '../../../../shared/db/schema';
-import { eq } from 'drizzle-orm';
+import {
+  workspaceInvites,
+  workspaceMembers,
+  workspaces,
+} from '../../../../shared/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
 import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 import { firstValueFrom } from 'rxjs';
@@ -41,6 +45,25 @@ export class InviteWorkspaceMemberService {
         .where(eq(workspaces.id, data.workspaceId))
         .limit(1);
 
+      const actorRole = await tx
+        .select()
+        .from(workspaceMembers)
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, data.workspaceId),
+            eq(workspaceMembers.userId, user.id),
+          ),
+        )
+        .limit(1)
+        .then((res) => res[0]);
+
+      if (!actorRole) {
+        throw new RpcException({
+          code: GrpcStatus.PERMISSION_DENIED,
+          message: 'you are not a member of this workspace',
+        });
+      }
+
       if (!workspace || workspace.deletedAt !== null) {
         throw new RpcException({
           code: GrpcStatus.NOT_FOUND,
@@ -49,23 +72,23 @@ export class InviteWorkspaceMemberService {
       }
 
       const memberChecker =
-        await this.checkWorkspaceMember.checkWorkspaceMember({
+        await this.checkWorkspaceMember.checkWorkspaceMemberByEmail({
           workspaceId: data.workspaceId,
-          userId: user.id,
+          email: data.email,
         });
 
-      if (!memberChecker.isActive) {
+      if (memberChecker) {
         throw new RpcException({
           code: GrpcStatus.PERMISSION_DENIED,
-          message: 'User is not a member of this workspace',
+          message: 'User is already a member of this workspace',
         });
       }
 
       const perm = await firstValueFrom(
         this.authZ.checkPermission({
-          roleId: memberChecker.authzRoleId,
+          roleId: actorRole.authzRoleId,
           scopeId: data.workspaceId,
-          permission: 'workspace:member:manage',
+          permission: 'workspace:members:manage',
         }),
       );
 
@@ -118,7 +141,7 @@ export class InviteWorkspaceMemberService {
         token: invite.token,
         workspaceId: invite.workspaceId,
         createdAt: invite.createdAt || new Date(),
-        status: 'PENDING',
+        status: 'pending',
       };
     });
   }
