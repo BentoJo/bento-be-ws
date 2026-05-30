@@ -9,12 +9,14 @@ import type {
   RestoreWorkspaceRequest,
   UpdateWorkspaceRequest,
   GetWorkspaceOverviewRequest,
+  ListUserWorkspacesRequest,
 } from './types';
 import { GetWorkspaceOverviewService } from './services/get-workspace-overview.service';
 
 import { DeleteWorkspaceService } from './services/delete-workspace.service';
 import { RestoreWorkspaceService } from './services/restore-workspace.service';
 import { GetWorkspaceService } from './services/get-workspace.service';
+import { ListUserWorkspacesService } from './services/list-user-workspaces.service';
 import { GrpcUser } from '../../../shared/decorators/meta.decorator';
 
 @Controller()
@@ -27,6 +29,7 @@ export class WorkspaceController {
     private readonly deleteWorkspaceService: DeleteWorkspaceService,
     private readonly restoreWorkspaceService: RestoreWorkspaceService,
     private readonly getWorkspaceOverviewService: GetWorkspaceOverviewService,
+    private readonly listUserWorkspacesService: ListUserWorkspacesService,
   ) {}
 
   @GrpcMethod('WorkspaceService', 'HealthCheck')
@@ -64,6 +67,14 @@ export class WorkspaceController {
     @GrpcUser() user: GrpcUser,
   ) {
     return this.getWorkspaceOverviewService.getOverview(data, user);
+  }
+
+  @GrpcMethod('WorkspaceService', 'ListUserWorkspaces')
+  listUserWorkspaces(
+    @Payload() data: ListUserWorkspacesRequest,
+    @GrpcUser() user: GrpcUser,
+  ) {
+    return this.listUserWorkspacesService.listUserWorkspaces(data, user);
   }
 
   @GrpcMethod('WorkspaceService', 'DeleteWorkspace')
