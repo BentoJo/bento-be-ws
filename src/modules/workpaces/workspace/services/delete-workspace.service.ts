@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { DeleteWorkspaceRequest } from '../types';
 import { RpcException } from '@nestjs/microservices';
 import { status as GrpcStatus } from '@grpc/grpc-js';
-import { validateRequired, validateUUID } from '../../../shared/validations';
-import db from '../../../shared/configs/db.config';
-import { workspaces } from '../../../shared/db/schema';
+import { validateRequired, validateUUID } from '../../../../shared/validations';
+import db from '../../../../shared/configs/db.config';
+import { workspaces } from '../../../../shared/db/schema';
 import { eq } from 'drizzle-orm';
-import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
-import { GrpcUser } from '../../../shared/decorators/meta.decorator';
-import { ActionResponse } from '../../../shared/types/genereal';
+import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
+import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
+import { ActionResponse } from '../../../../shared/types/genereal';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../authz/authz.service';
+import { AuthzService } from '../../../authz/authz.service';
 
 @Injectable()
 export class DeleteWorkspaceService {

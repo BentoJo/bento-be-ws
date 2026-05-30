@@ -26,7 +26,7 @@ service WorkspaceService {
       returns (workspace.common.ActionResponse); // Done
 
   rpc ListUserWorkspaces(ListUserWorkspacesRequest)
-      returns (ListUserWorkspacesResponse);
+      returns (ListUserWorkspacesResponse); // Done
 
   rpc GetWorkspaceOverview(GetWorkspaceOverviewRequest)
       returns (WorkspaceOverviewResponse); // Done

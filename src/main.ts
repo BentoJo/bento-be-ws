@@ -12,15 +12,20 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: ['workspace'],
+      package: ['workspace', 'workspaceMembers'],
       protoPath: [
         join(__dirname, '../src/shared/proto/workspace/workspace.proto'),
+        join(
+          __dirname,
+          '../src/shared/proto/workspace/workspace-members.proto',
+        ),
       ],
       url: `0.0.0.0:${grpcPort}`,
       loader: {
         keepCase: true,
         defaults: true,
         longs: String,
+        includeDirs: [join(__dirname, '../../../shared/proto')],
       },
     },
   });

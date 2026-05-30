@@ -16,6 +16,7 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.1057.0",
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/proto-loader": "^0.8.0",
     "@nestjs/common": "^11.0.1",

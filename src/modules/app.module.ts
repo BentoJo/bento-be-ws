@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { WorkspaceModule } from './workspace/workspace.module';
+import { WorkspaceModule } from './workpaces/workspace/workspace.module';
+import { MembersModule } from './workpaces/members/members.module';
 
 @Module({
-  imports: [WorkspaceModule],
+  imports: [WorkspaceModule, MembersModule],
 })
 export class AppModule {}

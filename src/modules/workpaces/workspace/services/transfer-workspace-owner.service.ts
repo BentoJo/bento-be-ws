@@ -1,25 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { RestoreWorkspaceRequest } from '../types';
+import { TransferWorkspaceOwnershipRequest } from '../types';
 import { RpcException } from '@nestjs/microservices';
 import { status as GrpcStatus } from '@grpc/grpc-js';
-import { validateRequired, validateUUID } from '../../../shared/validations';
-import db from '../../../shared/configs/db.config';
-import { workspaces } from '../../../shared/db/schema';
+import { validateRequired, validateUUID } from '../../../../shared/validations';
+import db from '../../../../shared/configs/db.config';
+import { workspaceMembers, workspaces } from '../../../../shared/db/schema';
 import { eq } from 'drizzle-orm';
-import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
-import { GrpcUser } from '../../../shared/decorators/meta.decorator';
-import { ActionResponse } from '../../../shared/types/genereal';
+import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
+import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
+import { ActionResponse } from '../../../../shared/types/genereal';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../authz/authz.service';
+import { AuthzService } from '../../../authz/authz.service';
 
 @Injectable()
-export class RestoreWorkspaceService {
+export class TransferWorkspaceOwnershipService {
   constructor(
     private readonly checkWorkspaceMember: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
   ) {}
-  async restoreWorkspace(
-    data: RestoreWorkspaceRequest,
+  async transferWorkspaceOwnership(
+    data: TransferWorkspaceOwnershipRequest,
     user: GrpcUser,
   ): Promise<ActionResponse> {
     // Validation
@@ -29,62 +29,61 @@ export class RestoreWorkspaceService {
       .select()
       .from(workspaces)
       .where(eq(workspaces.id, data.workspaceId))
+      .innerJoin(
+        workspaceMembers,
+        eq(workspaceMembers.workspaceId, workspaces.id),
+      )
       .limit(1);
 
-    if (!workspace || workspace.deletedAt !== null) {
+    if (!workspace || workspace.workspaces.createdAt !== null) {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
         message: 'Workspace not found or has not been deleted',
       });
     }
 
-    const memberChecker = await this.checkWorkspaceMember.checkWorkspaceMember({
-      workspaceId: data.workspaceId,
-      userId: user.id, // Replace with actual user ID from auth context
-    });
-
-    if (!memberChecker.isActive) {
+    if (workspace.workspaces.ownerUserId !== user.id) {
       throw new RpcException({
         code: GrpcStatus.PERMISSION_DENIED,
-        message: 'User is not a member of this workspace',
+        message: 'Only the workspace owner can transfer ownership',
       });
     }
 
     const perm = await firstValueFrom(
       this.authZ.checkPermission({
-        roleId: memberChecker.authzRoleId,
+        roleId: workspace.workspace_members.authzRoleId,
         scopeId: data.workspaceId,
-        permission: 'workspace:workspace:manage',
+        permission: 'workspace:workspace:transfer_ownership',
       }),
     );
 
     if (!perm?.allowed) {
       throw new RpcException({
         code: GrpcStatus.PERMISSION_DENIED,
-        message: 'Permission denied to restore workspace',
+        message: 'Permission denied to transfer workspace ownership',
       });
     }
 
     const result = await db
       .update(workspaces)
-      .set({ deletedAt: null })
+      .set({ ownerUserId: data.newOwnerId })
       .where(eq(workspaces.id, data.workspaceId))
       .execute();
 
     if (result.rowCount === 0) {
       throw new RpcException({
         code: GrpcStatus.INTERNAL,
-        message: 'Failed to restore workspace',
+        message: 'Failed to transfer workspace ownership',
       });
     }
 
     return {
       success: true,
-      message: 'Workspace restored successfully',
+      message: 'Workspace ownership transferred successfully',
     };
   }
 
-  private validateInput(data: RestoreWorkspaceRequest): void {
+  private validateInput(data: TransferWorkspaceOwnershipRequest): void {
     if (!data) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
@@ -105,6 +104,22 @@ export class RestoreWorkspaceService {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
         message: workspaceIdResult.message,
+      });
+    }
+
+    const newOwnerIdResult = validateRequired(data.newOwnerId, 'New Owner ID');
+    if (!newOwnerIdResult.valid) {
+      throw new RpcException({
+        code: GrpcStatus.INVALID_ARGUMENT,
+        message: newOwnerIdResult.message,
+      });
+    }
+
+    const newOwnerIdUuidResult = validateUUID(data.newOwnerId, 'New Owner ID');
+    if (!newOwnerIdUuidResult.valid) {
+      throw new RpcException({
+        code: GrpcStatus.INVALID_ARGUMENT,
+        message: newOwnerIdUuidResult.message,
       });
     }
   }

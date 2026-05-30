@@ -1,4 +1,4 @@
-import { Controller, UseGuards } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { HealthService } from './services/health.service';
 import { CreateWorkspaceService } from './services/create.workspace.service';
@@ -9,14 +9,15 @@ import type {
   RestoreWorkspaceRequest,
   UpdateWorkspaceRequest,
   GetWorkspaceOverviewRequest,
+  ListUserWorkspacesRequest,
 } from './types';
 import { GetWorkspaceOverviewService } from './services/get-workspace-overview.service';
-import { GrpcUser } from '../../shared/decorators/meta.decorator';
-import { RequirePermission } from '../../shared/decorators/permission.decorator';
-import { PermissionsGuard } from '../../shared/Guards/permissions.guard';
+
 import { DeleteWorkspaceService } from './services/delete-workspace.service';
 import { RestoreWorkspaceService } from './services/restore-workspace.service';
 import { GetWorkspaceService } from './services/get-workspace.service';
+import { ListUserWorkspacesService } from './services/list-user-workspaces.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
 
 @Controller()
 export class WorkspaceController {
@@ -28,10 +29,9 @@ export class WorkspaceController {
     private readonly deleteWorkspaceService: DeleteWorkspaceService,
     private readonly restoreWorkspaceService: RestoreWorkspaceService,
     private readonly getWorkspaceOverviewService: GetWorkspaceOverviewService,
+    private readonly listUserWorkspacesService: ListUserWorkspacesService,
   ) {}
 
-  @UseGuards(PermissionsGuard)
-  @RequirePermission('workspace:workspace:manage')
   @GrpcMethod('WorkspaceService', 'HealthCheck')
   healthCheck() {
     return { status: this.healthService.healthCheck() };
@@ -67,6 +67,14 @@ export class WorkspaceController {
     @GrpcUser() user: GrpcUser,
   ) {
     return this.getWorkspaceOverviewService.getOverview(data, user);
+  }
+
+  @GrpcMethod('WorkspaceService', 'ListUserWorkspaces')
+  listUserWorkspaces(
+    @Payload() data: ListUserWorkspacesRequest,
+    @GrpcUser() user: GrpcUser,
+  ) {
+    return this.listUserWorkspacesService.listUserWorkspaces(data, user);
   }
 
   @GrpcMethod('WorkspaceService', 'DeleteWorkspace')

@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { GetWorkspaceRequest, WorkspaceResponse } from '../types';
 import { RpcException } from '@nestjs/microservices';
 import { status as GrpcStatus } from '@grpc/grpc-js';
-import { validateRequired, validateUUID } from '../../../shared/validations';
-import db from '../../../shared/configs/db.config';
-import { workspaces } from '../../../shared/db/schema';
+import { validateRequired, validateUUID } from '../../../../shared/validations';
+import db from '../../../../shared/configs/db.config';
+import { workspaces } from '../../../../shared/db/schema';
 import { eq } from 'drizzle-orm';
-import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
-import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
+import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 
 @Injectable()
 export class GetWorkspaceService {
