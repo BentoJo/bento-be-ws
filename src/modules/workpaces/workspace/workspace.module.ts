@@ -11,6 +11,7 @@ import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
 import { GetWorkspaceOverviewService } from './services/get-workspace-overview.service';
 import { DeleteWorkspaceService } from './services/delete-workspace.service';
 import { RestoreWorkspaceService } from './services/restore-workspace.service';
+import { TransferWorkspaceOwnershipService } from './services/transfer-workspace-owner.service';
 
 @Module({
   imports: [AuthzModule],
@@ -26,6 +27,7 @@ import { RestoreWorkspaceService } from './services/restore-workspace.service';
     WorkspaceMembersFuncs,
     DeleteWorkspaceService,
     RestoreWorkspaceService,
+    TransferWorkspaceOwnershipService,
   ],
 })
 export class WorkspaceModule {}

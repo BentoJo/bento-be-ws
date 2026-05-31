@@ -1,0 +1,276 @@
+syntax = "proto3";
+
+package teams;
+
+import "../common.proto";
+
+service TeamService {
+  rpc CreateTeam(CreateTeamRequest)
+  returns (TeamResponse); // Done
+
+  rpc GetTeam(GetTeamRequest)
+  returns (TeamResponse); // Done
+
+  rpc UpdateTeam(UpdateTeamRequest)
+  returns (UpdateTeamResponse); // Done
+
+  rpc DeleteTeam(DeleteTeamRequest)
+  returns (DeleteTeamResponse); // Done
+
+  rpc RestoreTeam(RestoreTeamRequest)
+  returns (RestoreTeamResponse); // Done
+
+  rpc ArchiveTeam(ArchiveTeamRequest)
+  returns (workspace.common.ActionResponse); // Done
+
+  rpc UnarchiveTeam(UnarchiveTeamRequest)
+  returns (workspace.common.ActionResponse); // Done
+
+  rpc ListTeams(ListTeamsRequest)
+  returns (ListTeamsResponse); // Done
+
+  rpc AddTeamMember(AddTeamMemberRequest)
+  returns (AddTeamMemberResponse); // Done
+
+  rpc RemoveTeamMember(RemoveTeamMemberRequest)
+  returns (workspace.common.ActionResponse); // Done
+
+  rpc ListTeamMembers(ListTeamMembersRequest)
+  returns (ListTeamMembersResponse); // Done
+
+  rpc BulkAddTeamMembers(BulkAddTeamMembersRequest)
+  returns (workspace.common.ActionResponse);
+
+  rpc BulkRemoveTeamMembers(BulkRemoveTeamMembersRequest)
+  returns (workspace.common.ActionResponse);
+
+  rpc ListMemberTeams(ListMemberTeamsRequest)
+  returns (ListMemberTeamsResponse);
+
+  rpc ResolveEffectiveTeamMembers(ResolveEffectiveTeamMembersRequest)
+  returns (ResolveEffectiveTeamMembersResponse); // later
+}
+
+message CreateTeamRequest {
+  string workspaceId = 1;
+
+  string name = 2;
+
+  optional string description = 3;
+
+  optional string icon = 4;
+}
+
+message TeamResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string name = 3;
+
+  optional string description = 4;
+
+  optional string icon = 5;
+
+  bool isArchived = 6;
+
+  string createdAt = 7;
+
+  optional string updatedAt = 8;
+}
+
+message GetTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message UpdateTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  optional string name = 3;
+
+  optional string description = 4;
+
+  optional string icon = 5;
+}
+
+message UpdateTeamResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string name = 3;
+
+  optional string description = 4;
+
+  optional string icon = 5;
+
+  string updatedAt = 6;
+}
+
+message DeleteTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message DeleteTeamResponse {
+  bool success = 1;
+
+  string message = 2;
+
+  string deletedAt = 3;
+}
+
+message RestoreTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message RestoreTeamResponse {
+  bool success = 1;
+
+  string message = 2;
+
+  string restoredAt = 3;
+}
+
+message ArchiveTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message UnarchiveTeamRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+}
+
+message ListTeamsRequest {
+  string workspaceId = 1;
+
+  int32 page = 2;
+
+  int32 limit = 3;
+
+  optional string search = 4;
+
+  optional bool includeArchived = 5;
+}
+
+message TeamListItem {
+  string id = 1;
+
+  string name = 2;
+
+  optional string icon = 3;
+
+  bool isArchived = 4;
+
+  int32 membersCount = 5;
+}
+
+message ListTeamsResponse {
+  repeated TeamListItem teams = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+message AddTeamMemberRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  string workspaceMemberId = 3;
+}
+
+message AddTeamMemberResponse {
+  string id = 1;
+
+  string teamId = 2;
+
+  string workspaceMemberId = 3;
+
+  string joinedAt = 4;
+}
+
+message RemoveTeamMemberRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  string userId = 3;
+}
+
+message BulkAddTeamMembersRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  repeated string userIds = 3;
+}
+
+message BulkRemoveTeamMembersRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  repeated string userIds = 3;
+}
+
+message ListTeamMembersRequest {
+  string workspaceId = 1;
+
+  string teamId = 2;
+
+  int32 page = 3;
+
+  int32 limit = 4;
+
+  optional string search = 5;
+}
+
+message TeamMemberListItem {
+  string userId = 1;
+
+  string joinedAt = 2;
+}
+
+message ListTeamMembersResponse {
+  repeated TeamMemberListItem members = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+message ListMemberTeamsRequest {
+  string workspaceId = 1;
+
+  string userId = 2;
+}
+
+message MemberTeamListItem {
+  string teamId = 1;
+
+  string name = 2;
+
+  optional string icon = 3;
+}
+
+message ListMemberTeamsResponse {
+  repeated MemberTeamListItem teams = 1;
+}
+
+message ResolveEffectiveTeamMembersRequest {
+  string workspaceId = 1;
+
+  repeated string teamIds = 2;
+}
+
+message ResolveEffectiveTeamMembersResponse {
+  repeated string userIds = 1;
+}
