@@ -18,6 +18,7 @@ async function bootstrap() {
         'workspaceRoles',
         'board',
         'boardMembers',
+        'teams'
       ],
       protoPath: [
         join(__dirname, '../src/shared/proto/workspace/workspace.proto'),
@@ -28,6 +29,7 @@ async function bootstrap() {
         join(__dirname, '../src/shared/proto/workspace/workspace-role.proto'),
         join(__dirname, '../src/shared/proto/board/board.proto'),
         join(__dirname, '../src/shared/proto/board/board-members.proto'),
+        join(__dirname, '../src/shared/proto/teams/teams.proto'),
       ],
       url: `0.0.0.0:${grpcPort}`,
       loader: {

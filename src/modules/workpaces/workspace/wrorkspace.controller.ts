@@ -10,6 +10,8 @@ import type {
   UpdateWorkspaceRequest,
   GetWorkspaceOverviewRequest,
   ListUserWorkspacesRequest,
+  DeleteWorkspaceRequest,
+  TransferWorkspaceOwnershipRequest,
 } from './types';
 import { GetWorkspaceOverviewService } from './services/get-workspace-overview.service';
 
@@ -18,6 +20,7 @@ import { RestoreWorkspaceService } from './services/restore-workspace.service';
 import { GetWorkspaceService } from './services/get-workspace.service';
 import { ListUserWorkspacesService } from './services/list-user-workspaces.service';
 import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { TransferWorkspaceOwnershipService } from './services/transfer-workspace-owner.service';
 
 @Controller()
 export class WorkspaceController {
@@ -30,6 +33,7 @@ export class WorkspaceController {
     private readonly restoreWorkspaceService: RestoreWorkspaceService,
     private readonly getWorkspaceOverviewService: GetWorkspaceOverviewService,
     private readonly listUserWorkspacesService: ListUserWorkspacesService,
+    private readonly transferWorkspaceOwnershipService: TransferWorkspaceOwnershipService,
   ) {}
 
   @GrpcMethod('WorkspaceService', 'HealthCheck')
@@ -79,7 +83,7 @@ export class WorkspaceController {
 
   @GrpcMethod('WorkspaceService', 'DeleteWorkspace')
   deleteWorkspace(
-    @Payload() data: GetWorkspaceRequest,
+    @Payload() data: DeleteWorkspaceRequest,
     @GrpcUser() user: GrpcUser,
   ) {
     return this.deleteWorkspaceService.deleteWorkspace(data, user);
@@ -95,9 +99,12 @@ export class WorkspaceController {
 
   @GrpcMethod('WorkspaceService', 'TransferWorkspaceOwnership')
   transferWorkspaceOwnership(
-    @Payload() data: RestoreWorkspaceRequest,
+    @Payload() data: TransferWorkspaceOwnershipRequest,
     @GrpcUser() user: GrpcUser,
   ) {
-    return this.restoreWorkspaceService.restoreWorkspace(data, user);
+    return this.transferWorkspaceOwnershipService.transferWorkspaceOwnership(
+      data,
+      user,
+    );
   }
 }
