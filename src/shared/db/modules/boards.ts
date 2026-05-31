@@ -21,20 +21,13 @@ export const boards = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     icon: varchar('icon', { length: 100 }),
     visibility: boardVisibilityEnum('visibility').default('public'),
-    position: numeric('position', { precision: 10, scale: 4 }).notNull(),
     createdBy: uuid('created_by').notNull(),
     archivedAt: timestamp('archived_at'),
     deletedAt: timestamp('deleted_at'),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at'),
   },
-  (table) => [
-    index('boards_workspace_id_idx').on(table.workspaceId),
-    index('boards_workspace_id_position_idx').on(
-      table.workspaceId,
-      table.position,
-    ),
-  ],
+  (table) => [index('boards_workspace_id_idx').on(table.workspaceId)],
 );
 
 export const boardFavorites = pgTable(
