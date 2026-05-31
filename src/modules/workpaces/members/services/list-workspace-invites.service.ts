@@ -143,8 +143,8 @@ export class ListWorkspaceInvitesService {
       email: r.email,
       authzRoleId: r.authzRoleId,
       status: (r.status as string) ?? 'pending',
-      expiresAt: r.expiresAt ?? new Date(),
-      createdAt: r.createdAt ?? new Date(),
+      expiresAt: (r.expiresAt ?? new Date()).toISOString(),
+      createdAt: (r.createdAt ?? new Date()).toISOString(),
     }));
 
     const totalPages = limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1;

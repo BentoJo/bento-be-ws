@@ -9,7 +9,7 @@ import { CreateWorkspaceRequest, WorkspaceResponse } from '../types';
 import { workspaceMembers, workspaceRoles } from '../../../../shared/db/schema';
 import db from '../../../../shared/configs/db.config';
 import { firstValueFrom } from 'rxjs';
-import { validateName, validateRequired } from '../../../../shared/validations';
+import { validateRequired } from '../../../../shared/validations';
 
 @Injectable()
 export class CreateWorkspaceService {
@@ -106,8 +106,10 @@ export class CreateWorkspaceService {
       name: newWorkspace.name,
       logoUrl: newWorkspace.logoUrl ?? undefined,
       ownerId: newWorkspace.ownerUserId,
-      createdAt: newWorkspace.createdAt,
-      updatedAt: newWorkspace.updatedAt ?? undefined,
+      createdAt: newWorkspace.createdAt.toISOString(),
+      updatedAt: newWorkspace.updatedAt
+        ? newWorkspace.updatedAt.toISOString()
+        : undefined,
     };
   }
 
@@ -127,11 +129,10 @@ export class CreateWorkspaceService {
       });
     }
 
-    const nameResult = validateName(data.name, 'Name');
-    if (!nameResult.valid) {
+    if (data.name.length < 3) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
-        message: nameResult.message,
+        message: 'Name must be at least 3 characters long',
       });
     }
   }

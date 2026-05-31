@@ -48,9 +48,9 @@ export interface WorkspaceResponse {
 
   ownerId: string;
 
-  createdAt: Date;
+  createdAt: string;
 
-  updatedAt?: Date;
+  updatedAt?: string;
 }
 
 export interface GetWorkspaceRequest {

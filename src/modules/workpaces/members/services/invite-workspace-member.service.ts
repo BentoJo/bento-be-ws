@@ -136,11 +136,11 @@ export class InviteWorkspaceMemberService {
         inviteId: invite.id,
         authzRoleId: invite.authzRoleId,
         email: invite.email,
-        expiresAt: invite.expiresAt,
+        expiresAt: invite.expiresAt.toISOString(),
         invitedBy: invite.invitedBy,
         token: invite.token,
         workspaceId: invite.workspaceId,
-        createdAt: invite.createdAt || new Date(),
+        createdAt: (invite.createdAt || new Date()).toISOString(),
         status: 'pending',
       };
     });

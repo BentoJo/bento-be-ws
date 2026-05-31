@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package teams;
 
-import "google/protobuf/timestamp.proto";
 import "common.proto";
 
 service TeamService {
@@ -75,9 +74,9 @@ message TeamResponse {
 
   bool isArchived = 6;
 
-  google.protobuf.Timestamp createdAt = 7;
+  string createdAt = 7;
 
-  optional google.protobuf.Timestamp updatedAt = 8;
+  optional string updatedAt = 8;
 }
 
 message GetTeamRequest {
@@ -198,7 +197,7 @@ message ListTeamMembersRequest {
 message TeamMemberListItem {
   string userId = 1;
 
-  google.protobuf.Timestamp joinedAt = 2;
+  string joinedAt = 2;
 }
 
 message ListTeamMembersResponse {

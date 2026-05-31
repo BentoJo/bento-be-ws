@@ -137,7 +137,7 @@ export class ListWorkspaceMembersService {
       id: m.id,
       userId: m.userId,
       authzRoleId: m.authzRoleId,
-      joinedAt: m.joinedAt ?? new Date(),
+      joinedAt: (m.joinedAt as Date).toISOString(),
     }));
 
     const totalPages = limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1;

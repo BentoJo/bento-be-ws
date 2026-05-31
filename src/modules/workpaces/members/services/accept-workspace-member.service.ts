@@ -83,6 +83,7 @@ export class AcceptWorkspaceInviteService {
           workspaceId: invite.workspace_invites.workspaceId,
           userId: user.id,
           authzRoleId: invite.workspace_invites.authzRoleId,
+          joinedAt: new Date(),
         })
         .returning();
 
@@ -111,7 +112,7 @@ export class AcceptWorkspaceInviteService {
         workspaceId: membership.workspaceId,
         userId: membership.userId,
         authzRoleId: membership.authzRoleId,
-        joinedAt: new Date(),
+        joinedAt: (membership.joinedAt as Date).toISOString(),
       };
     });
   }

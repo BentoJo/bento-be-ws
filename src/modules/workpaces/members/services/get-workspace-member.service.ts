@@ -81,7 +81,7 @@ export class GetWorkspaceMemberService {
       workspaceId: member.workspaceId,
       userId: member.userId,
       authzRoleId: member.authzRoleId,
-      joinedAt: member.joinedAt ?? new Date(),
+      joinedAt: (member.joinedAt as Date).toISOString(),
     };
   }
 

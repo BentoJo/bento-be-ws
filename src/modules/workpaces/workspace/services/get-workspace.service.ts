@@ -48,8 +48,10 @@ export class GetWorkspaceService {
       id: workspace.id,
       name: workspace.name,
       ownerId: workspace.ownerUserId,
-      createdAt: workspace.createdAt,
-      updatedAt: workspace.updatedAt ?? undefined,
+      createdAt: workspace.createdAt.toISOString(),
+      updatedAt: workspace.updatedAt
+        ? workspace.updatedAt.toISOString()
+        : undefined,
       logoUrl: workspace.logoUrl ?? undefined,
     };
   }
