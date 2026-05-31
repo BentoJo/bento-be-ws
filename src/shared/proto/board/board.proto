@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package boards;
 
-import "google/protobuf/timestamp.proto";
 import "../common.proto";
 
 service BoardService {
@@ -292,6 +291,10 @@ message UnfavoriteBoardRequest {
 
 message ListFavoriteBoardsRequest {
   string workspaceId = 1;
+
+  int32 page = 2;
+
+  int32 limit = 3;
 }
 
 message FavoriteBoardListItem {
@@ -306,6 +309,8 @@ message FavoriteBoardListItem {
 
 message ListFavoriteBoardsResponse {
   repeated FavoriteBoardListItem boards = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
 }
 
 // ---------------------------
