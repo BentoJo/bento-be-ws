@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package workspaceRoles;
 
-import "src/shared/proto/common.proto";
+import "../common.proto";
 
 service WorkspaceRoleService {
   rpc GetWorkspaceRoleFromAuthZ(GetWorkspaceRoleFromAuthZRequest)
@@ -31,7 +31,7 @@ message GetWorkspaceRolesRequest {
 
 message GetWorkspaceRolesResponse
 {
-  string                                  workspaceId = 1;
+  string                 workspaceId = 1;
   repeated WorkspaceRole roles       = 2;
 }
 
@@ -43,13 +43,6 @@ message WorkspaceRole {
   bool isSystemRole = 5;
 }
 
-message WorkspaceRole {
-  string authzRoleId = 3;
-
-  string roleName = 4;
-
-  bool isSystemRole = 5;
-}
 
 message WorkspaceRoleReferenceResponse {
   string id = 1;

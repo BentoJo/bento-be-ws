@@ -87,8 +87,10 @@ export class UpdateWorkspaceService {
       name: updated.name,
       logoUrl: updated.logoUrl ?? undefined,
       ownerId: updated.ownerUserId,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt ?? undefined,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt
+        ? updated.updatedAt.toISOString()
+        : undefined,
     };
   }
 

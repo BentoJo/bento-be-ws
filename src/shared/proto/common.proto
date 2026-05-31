@@ -4,8 +4,6 @@ package workspace.common;
 
 // Shared enums and DTOs used across Workspace Service protos.
 
-import "google/protobuf/timestamp.proto";
-
 // ---------------------------
 // ENUMS (from WS.dbml)
 // ---------------------------
@@ -74,5 +72,5 @@ message Watcher {
   string userId = 1;
 
   // When the watch record was created.
-  google.protobuf.Timestamp watchedAt = 2;
+  string watchedAt = 2;
 }

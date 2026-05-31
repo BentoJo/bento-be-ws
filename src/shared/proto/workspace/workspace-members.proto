@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package workspaceMembers;
 
-import "google/protobuf/timestamp.proto";
 import "../common.proto";
 
 service WorkspaceMemberService {
@@ -60,9 +59,9 @@ message WorkspaceInviteListItem {
 
   string status = 5;
 
-  google.protobuf.Timestamp expiresAt = 6;
+  string expiresAt = 6;
 
-  google.protobuf.Timestamp createdAt = 7;
+  string createdAt = 7;
 }
 
 message ListWorkspaceInvitesResponse {
@@ -99,13 +98,13 @@ message WorkspaceInviteResponse {
 
   string token = 5;
 
-  google.protobuf.Timestamp expiresAt = 6;
+  string expiresAt = 6;
 
   string invitedBy = 7;
 
   workspace.common.WorkspaceInviteStatus status = 8;
 
-  google.protobuf.Timestamp createdAt = 9;
+  string createdAt = 9;
 }
 
 message AcceptWorkspaceInviteRequest {
@@ -121,7 +120,7 @@ message WorkspaceMembershipResponse {
 
   string authzRoleId = 4;
 
-  google.protobuf.Timestamp joinedAt = 5;
+  string joinedAt = 5;
 }
 
 message RejectWorkspaceInviteRequest {
@@ -153,7 +152,7 @@ message WorkspaceMemberResponse {
 
   string authzRoleId = 4;
 
-  google.protobuf.Timestamp joinedAt = 5;
+  string joinedAt = 5;
 }
 
 message ListWorkspaceMembersRequest {
@@ -173,7 +172,7 @@ message WorkspaceMemberListItem {
 
   string authzRoleId = 3;
 
-  google.protobuf.Timestamp joinedAt = 4;
+  string joinedAt = 4;
 }
 
 message ListWorkspaceMembersResponse {

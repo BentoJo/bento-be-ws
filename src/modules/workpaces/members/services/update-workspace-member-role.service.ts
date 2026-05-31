@@ -167,7 +167,7 @@ export class UpdateWorkspaceMemberRoleService {
         workspaceId: updatedMember.workspaceId,
         userId: updatedMember.userId,
         authzRoleId: updatedMember.authzRoleId,
-        joinedAt: updatedMember.joinedAt ?? new Date(),
+        joinedAt: (updatedMember.joinedAt as Date).toISOString(),
       };
     });
   }
