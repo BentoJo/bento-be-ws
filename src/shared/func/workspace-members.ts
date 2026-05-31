@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import db from '../configs/db.config';
 import { workspaceInvites, workspaceMembers } from '../db/modules/workspace';
@@ -66,5 +66,46 @@ export class WorkspaceMembersFuncs {
     if (invite) {
       return invite;
     }
+  }
+
+  async findActiveByIds(ids: string[]) {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const members = await db
+      .select()
+      .from(workspaceMembers)
+      .where(
+        and(
+          inArray(workspaceMembers.id, ids),
+          eq(workspaceMembers.isActive, true),
+        ),
+      );
+
+    return members;
+  }
+
+  async findActiveByWorkspaceIdAndUserIds(
+    workspaceId: string,
+    userIds: string[],
+    tx?: DB,
+  ) {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    const members = await (tx || db)
+      .select()
+      .from(workspaceMembers)
+      .where(
+        and(
+          eq(workspaceMembers.workspaceId, workspaceId),
+          inArray(workspaceMembers.userId, userIds),
+          eq(workspaceMembers.isActive, true),
+        ),
+      );
+
+    return members;
   }
 }
