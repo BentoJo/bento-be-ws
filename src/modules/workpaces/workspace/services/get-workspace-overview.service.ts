@@ -149,7 +149,7 @@ export class GetWorkspaceOverviewService {
       })
       .from(boards)
       .where(and(eq(boards.workspaceId, workspaceId), isNull(boards.deletedAt)))
-      .orderBy(boards.position)
+      .orderBy(boards.createdAt)
       .limit(5);
 
     const [membersCountRes, teamsCountRes, boardsCountRes, cardsSummaryRes] =
