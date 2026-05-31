@@ -75,7 +75,7 @@ export class RemoveBoardMemberService {
         this.authZ.checkPermission({
           roleId: requesterMember.authzRoleId,
           scopeId: data.workspaceId,
-          permission: 'workspace:boards:manage',
+          permission: 'workspace:board_members:manage',
         }),
       );
 
