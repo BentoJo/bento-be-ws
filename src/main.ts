@@ -18,7 +18,7 @@ async function bootstrap() {
         'workspaceRoles',
         'board',
         'boardMembers',
-        'teams'
+        'teams',
       ],
       protoPath: [
         join(__dirname, '../src/shared/proto/workspace/workspace.proto'),

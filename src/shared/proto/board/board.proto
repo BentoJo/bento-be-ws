@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package boards;
+package board;
 
 import "../common.proto";
 
