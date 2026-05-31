@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package boards;
+
+import "../common.proto";
+
+service BoardMembersService {
+  rpc ListWorkspaceBoards(ListWorkspaceBoardsRequest)
+      returns (ListWorkspaceBoardsResponse);
+
+  rpc AddBoardMember(AddBoardMemberRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RemoveBoardMember(RemoveBoardMemberRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListBoardMembers(ListBoardMembersRequest)
+      returns (ListBoardMembersResponse);
+}
+
+
+message ListWorkspaceBoardsRequest {
+  string workspaceId = 1;
+
+  int32 page = 2;
+
+  int32 limit = 3;
+
+  optional string search = 4;
+
+  optional bool includeArchived = 5;
+}
+
+message BoardListItem {
+  string id = 1;
+
+  string name = 2;
+
+  bool isPrivate = 3;
+
+  optional string icon = 4;
+
+  bool isArchived = 5;
+
+  bool isFavorite = 6;
+}
+
+message ListWorkspaceBoardsResponse {
+  repeated BoardListItem boards = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+
+message AddBoardMemberRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string userId = 3;
+
+  optional string overrideRoleId = 4;
+}
+
+message RemoveBoardMemberRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string userId = 3;
+}
+
+
+message ListBoardMembersRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  int32 page = 3;
+
+  int32 limit = 4;
+
+  optional string search = 5;
+}
+
+message BoardMemberListItem {
+  string userId = 1;
+
+  optional string overrideRoleId = 2;
+
+  string joinedAt = 3;
+}
+
+message ListBoardMembersResponse {
+  repeated BoardMemberListItem members = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}

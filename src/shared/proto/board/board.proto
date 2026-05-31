@@ -35,28 +35,16 @@ service BoardService {
   rpc RemoveBoardMember(RemoveBoardMemberRequest)
       returns (workspace.common.ActionResponse);
 
-  rpc UpdateBoardMemberRoleOverride(
-      UpdateBoardMemberRoleOverrideRequest)
-      returns (workspace.common.ActionResponse);
+  // rpc UpdateBoardMemberRoleOverride(
+  //     UpdateBoardMemberRoleOverrideRequest)
+  //     returns (workspace.common.ActionResponse);
 
-  rpc ClearBoardMemberRoleOverride(
-      ClearBoardMemberRoleOverrideRequest)
-      returns (workspace.common.ActionResponse);
+  // rpc ClearBoardMemberRoleOverride(
+  //     ClearBoardMemberRoleOverrideRequest)
+  //     returns (workspace.common.ActionResponse);
 
   rpc ListBoardMembers(ListBoardMembersRequest)
       returns (ListBoardMembersResponse);
-
-  rpc ValidateBoardMembership(ValidateBoardMembershipRequest)
-      returns (ValidateBoardMembershipResponse);
-
-  rpc MakeBoardPrivate(MakeBoardPrivateRequest)
-      returns (workspace.common.ActionResponse);
-
-  rpc MakeBoardPublic(MakeBoardPublicRequest)
-      returns (workspace.common.ActionResponse);
-
-  rpc ValidateBoardAccess(ValidateBoardAccessRequest)
-      returns (ValidateBoardAccessResponse);
 
   rpc FavoriteBoard(FavoriteBoardRequest)
       returns (workspace.common.ActionResponse);
@@ -66,15 +54,6 @@ service BoardService {
 
   rpc ListFavoriteBoards(ListFavoriteBoardsRequest)
       returns (ListFavoriteBoardsResponse);
-
-    rpc WatchBoard(WatchBoardRequest)
-      returns (workspace.common.ActionResponse);
-
-    rpc UnwatchBoard(UnwatchBoardRequest)
-      returns (workspace.common.ActionResponse);
-
-    rpc ListBoardWatchers(ListBoardWatchersRequest)
-      returns (ListBoardWatchersResponse);
 }
 
 message CreateBoardRequest {
