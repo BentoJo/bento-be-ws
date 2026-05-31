@@ -9,6 +9,11 @@ import { GetBoardService } from './services/get.board.service';
 import { UpdateBoardService } from './services/update.board.service';
 import { DeleteBoardService } from './services/delete.board.service';
 import { RestoreBoardService } from './services/restore.board.service';
+import { FavoriteBoardService } from './services/favorite.board.service';
+import { UnfavoriteBoardService } from './services/unfavorite.board.service';
+import { ArchiveBoardService } from './services/archive.board.service';
+import { UnarchiveBoardService } from './services/unarchive.board.service';
+import { ListFavoriteBoardsService } from './services/list-favorite-boards.service';
 import { ListBoardsService } from './services/list.board.service';
 
 @Module({
@@ -23,6 +28,11 @@ import { ListBoardsService } from './services/list.board.service';
     UpdateBoardService,
     DeleteBoardService,
     RestoreBoardService,
+    FavoriteBoardService,
+    UnfavoriteBoardService,
+    ArchiveBoardService,
+    UnarchiveBoardService,
+    ListFavoriteBoardsService,
     ListBoardsService,
   ],
   exports: [
@@ -34,6 +44,11 @@ import { ListBoardsService } from './services/list.board.service';
     UpdateBoardService,
     DeleteBoardService,
     RestoreBoardService,
+    FavoriteBoardService,
+    UnfavoriteBoardService,
+    ArchiveBoardService,
+    UnarchiveBoardService,
+    ListFavoriteBoardsService,
     ListBoardsService,
   ],
 })

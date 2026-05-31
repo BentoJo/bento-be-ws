@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package boards;
 
-import "google/protobuf/timestamp.proto";
 import "../common.proto";
 
 service BoardService {
@@ -36,28 +35,16 @@ service BoardService {
   rpc RemoveBoardMember(RemoveBoardMemberRequest)
       returns (workspace.common.ActionResponse);
 
-  rpc UpdateBoardMemberRoleOverride(
-      UpdateBoardMemberRoleOverrideRequest)
-      returns (workspace.common.ActionResponse);
+  // rpc UpdateBoardMemberRoleOverride(
+  //     UpdateBoardMemberRoleOverrideRequest)
+  //     returns (workspace.common.ActionResponse);
 
-  rpc ClearBoardMemberRoleOverride(
-      ClearBoardMemberRoleOverrideRequest)
-      returns (workspace.common.ActionResponse);
+  // rpc ClearBoardMemberRoleOverride(
+  //     ClearBoardMemberRoleOverrideRequest)
+  //     returns (workspace.common.ActionResponse);
 
   rpc ListBoardMembers(ListBoardMembersRequest)
       returns (ListBoardMembersResponse);
-
-  rpc ValidateBoardMembership(ValidateBoardMembershipRequest)
-      returns (ValidateBoardMembershipResponse);
-
-  rpc MakeBoardPrivate(MakeBoardPrivateRequest)
-      returns (workspace.common.ActionResponse);
-
-  rpc MakeBoardPublic(MakeBoardPublicRequest)
-      returns (workspace.common.ActionResponse);
-
-  rpc ValidateBoardAccess(ValidateBoardAccessRequest)
-      returns (ValidateBoardAccessResponse);
 
   rpc FavoriteBoard(FavoriteBoardRequest)
       returns (workspace.common.ActionResponse);
@@ -67,15 +54,6 @@ service BoardService {
 
   rpc ListFavoriteBoards(ListFavoriteBoardsRequest)
       returns (ListFavoriteBoardsResponse);
-
-    rpc WatchBoard(WatchBoardRequest)
-      returns (workspace.common.ActionResponse);
-
-    rpc UnwatchBoard(UnwatchBoardRequest)
-      returns (workspace.common.ActionResponse);
-
-    rpc ListBoardWatchers(ListBoardWatchersRequest)
-      returns (ListBoardWatchersResponse);
 }
 
 message CreateBoardRequest {
@@ -292,6 +270,10 @@ message UnfavoriteBoardRequest {
 
 message ListFavoriteBoardsRequest {
   string workspaceId = 1;
+
+  int32 page = 2;
+
+  int32 limit = 3;
 }
 
 message FavoriteBoardListItem {
@@ -306,6 +288,8 @@ message FavoriteBoardListItem {
 
 message ListFavoriteBoardsResponse {
   repeated FavoriteBoardListItem boards = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
 }
 
 // ---------------------------

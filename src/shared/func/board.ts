@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { boardMembers, boards, workspaceMembers } from '../db/schema';
+import {
+  boardFavorites,
+  boardMembers,
+  boards,
+  workspaceMembers,
+} from '../db/schema';
 import db from '../configs/db.config';
 import { BoardVisibility } from '../../modules/boards/board/types';
 
@@ -42,6 +47,125 @@ export class BoardFuncs {
       .limit(1);
 
     return !!row;
+  }
+
+  async favoriteBoard(
+    data: {
+      workspaceId: string;
+      boardId: string;
+      workspaceMemberId: string;
+    },
+    tx?: DB,
+  ) {
+    const client = tx || db;
+
+    const [existing] = await client
+      .select({ id: boardFavorites.id })
+      .from(boardFavorites)
+      .where(
+        and(
+          eq(boardFavorites.boardId, data.boardId),
+          eq(boardFavorites.workspaceMemberId, data.workspaceMemberId),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      return;
+    }
+
+    await client.insert(boardFavorites).values({
+      id: randomUUID(),
+      workspaceId: data.workspaceId,
+      boardId: data.boardId,
+      workspaceMemberId: data.workspaceMemberId,
+    });
+  }
+
+  async listFavoriteBoards(
+    data: {
+      workspaceId: string;
+      workspaceMemberId: string;
+      page: number;
+      limit: number;
+    },
+    tx?: DB,
+  ) {
+    const client = tx || db;
+    const offset = (data.page - 1) * data.limit;
+
+    const whereClause = and(
+      eq(boardFavorites.workspaceId, data.workspaceId),
+      eq(boardFavorites.workspaceMemberId, data.workspaceMemberId),
+      isNull(boards.deletedAt),
+      isNull(boards.archivedAt),
+    );
+
+    const [countRow] = await client
+      .select({ total: sql<number>`COUNT(*)` })
+      .from(boardFavorites)
+      .innerJoin(boards, eq(boardFavorites.boardId, boards.id))
+      .where(whereClause);
+
+    const total = Number(countRow?.total ?? 0);
+
+    const rows = await client
+      .select({
+        boardId: boards.id,
+        name: boards.name,
+        icon: boards.icon,
+        visibility: boards.visibility,
+      })
+      .from(boardFavorites)
+      .innerJoin(boards, eq(boardFavorites.boardId, boards.id))
+      .where(whereClause)
+      .orderBy(desc(boardFavorites.createdAt))
+      .limit(data.limit)
+      .offset(offset);
+
+    return {
+      rows,
+      total,
+    };
+  }
+
+  async unfavoriteBoard(
+    data: {
+      boardId: string;
+      workspaceMemberId: string;
+    },
+    tx?: DB,
+  ) {
+    const client = tx || db;
+
+    await client
+      .delete(boardFavorites)
+      .where(
+        and(
+          eq(boardFavorites.boardId, data.boardId),
+          eq(boardFavorites.workspaceMemberId, data.workspaceMemberId),
+        ),
+      );
+  }
+
+  async archiveBoard(id: string, tx?: DB): Promise<BoardRow> {
+    const row = await this.update(id, { archivedAt: new Date() }, tx);
+
+    if (!row) {
+      throw new Error('Failed to archive board');
+    }
+
+    return row;
+  }
+
+  async unarchiveBoard(id: string, tx?: DB): Promise<BoardRow> {
+    const row = await this.update(id, { archivedAt: null }, tx);
+
+    if (!row) {
+      throw new Error('Failed to unarchive board');
+    }
+
+    return row;
   }
 
   async getById(id: string, tx?: DB) {

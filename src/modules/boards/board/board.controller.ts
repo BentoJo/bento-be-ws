@@ -6,16 +6,27 @@ import { GetBoardService } from './services/get.board.service';
 import { UpdateBoardService } from './services/update.board.service';
 import { DeleteBoardService } from './services/delete.board.service';
 import { RestoreBoardService } from './services/restore.board.service';
+import { FavoriteBoardService } from './services/favorite.board.service';
+import { UnfavoriteBoardService } from './services/unfavorite.board.service';
+import { ArchiveBoardService } from './services/archive.board.service';
+import { UnarchiveBoardService } from './services/unarchive.board.service';
+import { ListFavoriteBoardsService } from './services/list-favorite-boards.service';
 import { ListBoardsService } from './services/list.board.service';
 import type {
   CreateBoardRequest,
   DeleteBoardRequest,
+  ArchiveBoardRequest,
+  UnarchiveBoardRequest,
   GetBoardRequest,
+  FavoriteBoardRequest,
   ListBoardsRequest,
   ListBoardsResponse,
+  ListFavoriteBoardsRequest,
+  ListFavoriteBoardsResponse,
   UpdateBoardRequest,
   BoardResponse,
   RestoreBoardRequest,
+  UnfavoriteBoardRequest,
 } from './types';
 import type { ActionResponse } from '../../../shared/types/genereal';
 
@@ -27,6 +38,11 @@ export class BoardController {
     private readonly updateBoardService: UpdateBoardService,
     private readonly deleteBoardService: DeleteBoardService,
     private readonly restoreBoardService: RestoreBoardService,
+    private readonly favoriteBoardService: FavoriteBoardService,
+    private readonly unfavoriteBoardService: UnfavoriteBoardService,
+    private readonly archiveBoardService: ArchiveBoardService,
+    private readonly unarchiveBoardService: UnarchiveBoardService,
+    private readonly listFavoriteBoardsService: ListFavoriteBoardsService,
     private readonly listBoardsService: ListBoardsService,
   ) {}
 
@@ -68,6 +84,46 @@ export class BoardController {
     @GrpcUser() user: GrpcUser,
   ): Promise<ActionResponse> {
     return this.restoreBoardService.restoreBoard(data, user);
+  }
+
+  @GrpcMethod('BoardService', 'FavoriteBoard')
+  favoriteBoard(
+    @Payload() data: FavoriteBoardRequest,
+    @GrpcUser() user: GrpcUser,
+  ): Promise<ActionResponse> {
+    return this.favoriteBoardService.favoriteBoard(data, user);
+  }
+
+  @GrpcMethod('BoardService', 'UnfavoriteBoard')
+  unfavoriteBoard(
+    @Payload() data: UnfavoriteBoardRequest,
+    @GrpcUser() user: GrpcUser,
+  ): Promise<ActionResponse> {
+    return this.unfavoriteBoardService.unfavoriteBoard(data, user);
+  }
+
+  @GrpcMethod('BoardService', 'ArchiveBoard')
+  archiveBoard(
+    @Payload() data: ArchiveBoardRequest,
+    @GrpcUser() user: GrpcUser,
+  ): Promise<ActionResponse> {
+    return this.archiveBoardService.archiveBoard(data, user);
+  }
+
+  @GrpcMethod('BoardService', 'UnarchiveBoard')
+  unarchiveBoard(
+    @Payload() data: UnarchiveBoardRequest,
+    @GrpcUser() user: GrpcUser,
+  ): Promise<ActionResponse> {
+    return this.unarchiveBoardService.unarchiveBoard(data, user);
+  }
+
+  @GrpcMethod('BoardService', 'ListFavoriteBoards')
+  listFavoriteBoards(
+    @Payload() data: ListFavoriteBoardsRequest,
+    @GrpcUser() user: GrpcUser,
+  ): Promise<ListFavoriteBoardsResponse> {
+    return this.listFavoriteBoardsService.listFavoriteBoards(data, user);
   }
 
   @GrpcMethod('BoardService', 'ListWorkspaceBoards')

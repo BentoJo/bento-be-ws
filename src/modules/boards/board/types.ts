@@ -29,6 +29,51 @@ export interface RestoreBoardRequest {
   boardId: string;
 }
 
+export interface FavoriteBoardRequest {
+  workspaceId: string;
+  boardId: string;
+}
+
+export interface UnfavoriteBoardRequest {
+  workspaceId: string;
+  boardId: string;
+}
+
+export interface ArchiveBoardRequest {
+  workspaceId: string;
+  boardId: string;
+}
+
+export interface UnarchiveBoardRequest {
+  workspaceId: string;
+  boardId: string;
+}
+
+export interface ListFavoriteBoardsRequest {
+  workspaceId: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface FavoriteBoardListItem {
+  boardId: string;
+  name: string;
+  icon?: string | null;
+  isPrivate: boolean;
+}
+
+export interface ListFavoriteBoardsResponse {
+  boards: FavoriteBoardListItem[];
+  pagination: PaginationMeta;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface GetBoardRequest {
   workspaceId: string;
   boardId: string;

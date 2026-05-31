@@ -12,7 +12,14 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: ['workspace', 'workspaceMembers', 'workspaceRoles', 'teams'],
+      package: [
+        'workspace',
+        'workspaceMembers',
+        'workspaceRoles',
+        'board',
+        'boardMembers',
+        'teams'
+      ],
       protoPath: [
         join(__dirname, '../src/shared/proto/workspace/workspace.proto'),
         join(
@@ -20,6 +27,8 @@ async function bootstrap() {
           '../src/shared/proto/workspace/workspace-members.proto',
         ),
         join(__dirname, '../src/shared/proto/workspace/workspace-role.proto'),
+        join(__dirname, '../src/shared/proto/board/board.proto'),
+        join(__dirname, '../src/shared/proto/board/board-members.proto'),
         join(__dirname, '../src/shared/proto/teams/teams.proto'),
       ],
       url: `0.0.0.0:${grpcPort}`,
