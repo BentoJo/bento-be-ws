@@ -101,9 +101,9 @@ message BoardResponse {
 
   bool isArchived = 6;
 
-  google.protobuf.Timestamp createdAt = 7;
+  string createdAt = 7;
 
-  optional google.protobuf.Timestamp updatedAt = 8;
+  optional string updatedAt = 8;
 }
 
 message GetBoardRequest {
@@ -233,7 +233,7 @@ message BoardMemberListItem {
 
   optional string overrideRoleId = 2;
 
-  google.protobuf.Timestamp joinedAt = 3;
+  string joinedAt = 3;
 }
 
 message ListBoardMembersResponse {
