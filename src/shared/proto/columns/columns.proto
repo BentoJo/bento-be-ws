@@ -1,0 +1,255 @@
+syntax = "proto3";
+
+package columns;
+
+import "google/protobuf/timestamp.proto";
+import "../common.proto";
+
+service ColumnService {
+  rpc CreateColumn(CreateColumnRequest)
+      returns (ColumnResponse);
+
+  rpc GetColumn(GetColumnRequest)
+      returns (ColumnResponse);
+
+  rpc UpdateColumn(UpdateColumnRequest)
+      returns (ColumnResponse);
+
+  rpc DeleteColumn(DeleteColumnRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RestoreColumn(RestoreColumnRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ArchiveColumn(ArchiveColumnRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc UnarchiveColumn(UnarchiveColumnRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListBoardColumns(ListBoardColumnsRequest)
+      returns (ListBoardColumnsResponse);
+
+  rpc ReorderColumn(ReorderColumnRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc BulkReorderColumns(BulkReorderColumnsRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc WatchColumn(WatchColumnRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc UnwatchColumn(UnwatchColumnRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListColumnWatchers(ListColumnWatchersRequest)
+      returns (ListColumnWatchersResponse);
+
+  rpc ListColumnCards(ListColumnCardsRequest)
+      returns (ListColumnCardsResponse);
+
+  rpc MoveCardsBetweenColumns(MoveCardsBetweenColumnsRequest)
+      returns (workspace.common.ActionResponse);
+}
+
+message CreateColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string name = 3;
+
+  optional int32 position = 4;
+}
+
+message ColumnResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string boardId = 3;
+
+  string name = 4;
+
+  int32 position = 5;
+
+  bool isArchived = 6;
+
+  google.protobuf.Timestamp createdAt = 7;
+
+  optional google.protobuf.Timestamp updatedAt = 8;
+}
+
+message GetColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+}
+
+message UpdateColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+
+  optional string name = 4;
+}
+
+message DeleteColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+}
+
+message RestoreColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+}
+
+message ArchiveColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+}
+
+message UnarchiveColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+}
+
+message ListBoardColumnsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  optional bool includeArchived = 3;
+}
+
+message ColumnListItem {
+  string id = 1;
+
+  string name = 2;
+
+  int32 position = 3;
+
+  bool isArchived = 4;
+
+  int32 cardsCount = 5;
+}
+
+message ListBoardColumnsResponse {
+  repeated ColumnListItem columns = 1;
+}
+
+message ReorderColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+
+  int32 newPosition = 4;
+}
+
+message ReorderedColumnItem {
+  string columnId = 1;
+
+  int32 position = 2;
+}
+
+message BulkReorderColumnsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  repeated ReorderedColumnItem columns = 3;
+}
+
+message WatchColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+}
+
+message UnwatchColumnRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+}
+
+message ListColumnWatchersRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+
+  int32 page = 4;
+
+  int32 limit = 5;
+}
+
+message ListColumnWatchersResponse {
+  repeated workspace.common.Watcher watchers = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+message ListColumnCardsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+
+  int32 page = 4;
+
+  int32 limit = 5;
+}
+
+message ColumnCardListItem {
+  string cardId = 1;
+
+  string title = 2;
+
+  int32 position = 3;
+
+  bool completed = 4;
+
+  optional google.protobuf.Timestamp dueDate = 5;
+}
+
+message ListColumnCardsResponse {
+  repeated ColumnCardListItem cards = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+message MoveCardsBetweenColumnsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string sourceColumnId = 3;
+
+  string targetColumnId = 4;
+
+  repeated string cardIds = 5;
+}
