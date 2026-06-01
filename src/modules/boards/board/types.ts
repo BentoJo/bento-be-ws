@@ -8,7 +8,7 @@ export interface CreateBoardRequest {
   workspaceId: string;
   name: string;
   icon?: string;
-  visibility?: BoardVisibility;
+  visibility?: 'public' | 'private';
 }
 
 export interface UpdateBoardRequest {
@@ -16,7 +16,7 @@ export interface UpdateBoardRequest {
   boardId: string;
   name?: string;
   icon?: string | null;
-  visibility?: BoardVisibility;
+  visibility?: 'public' | 'private';
 }
 
 export interface DeleteBoardRequest {
