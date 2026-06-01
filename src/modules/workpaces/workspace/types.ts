@@ -72,9 +72,9 @@ export interface TransferWorkspaceOwnershipRequest {
 }
 
 export interface ListUserWorkspacesRequest {
-  page?: number;
+  page?: string;
 
-  limit?: number;
+  limit?: string;
 
   search?: string;
 

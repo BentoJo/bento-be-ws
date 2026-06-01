@@ -22,19 +22,19 @@ service WorkspaceService {
   rpc UnarchiveWorkspace(UnarchiveWorkspaceRequest) returns (workspace.common.ActionResponse); // Later
 
   rpc TransferWorkspaceOwnership(TransferWorkspaceOwnershipRequest)
-      returns (workspace.common.ActionResponse); // Done
+  returns (workspace.common.ActionResponse); // Done
 
   rpc ListUserWorkspaces(ListUserWorkspacesRequest)
-      returns (ListUserWorkspacesResponse); // Done
+  returns (ListUserWorkspacesResponse); // Done
 
   rpc GetWorkspaceOverview(GetWorkspaceOverviewRequest)
-      returns (WorkspaceOverviewResponse); // Done
+  returns (WorkspaceOverviewResponse); // Done
 
   rpc GetWorkspaceStats(GetWorkspaceStatsRequest)
-      returns (WorkspaceStatsResponse);
+  returns (WorkspaceStatsResponse);
 
   rpc RemoveWorkspaceLogo(RemoveWorkspaceLogoRequest)
-      returns (WorkspaceResponse);
+  returns (WorkspaceResponse);
 }
 
 // NOTE: WorkspaceActionResponse and PaginationMeta were moved to common.proto.
@@ -45,8 +45,9 @@ message HealthCheckRequest{}
 message HealthCheckResponse {
   string status = 1;
 }
+
 message CreateWorkspaceRequest {
-  string name = 1;
+  string          name    = 1;
   optional string logoUrl = 2;
 }
 
@@ -111,9 +112,9 @@ message TransferWorkspaceOwnershipRequest {
 
 // List Users
 message ListUserWorkspacesRequest {
-  int32 page = 1;
+  optional int32 page = 1;
 
-  int32 limit = 2;
+  optional int32 limit = 2;
 
   optional string search = 3;
 
@@ -138,20 +139,20 @@ message ListUserWorkspacesResponse {
   workspace.common.PaginationMeta pagination = 2;
 }
 
-//Overview 
+//Overview
 message GetWorkspaceOverviewRequest {
   string workspaceId = 1;
 }
 
 // Edit ===================================================
 message WorkspaceOverviewResponse {
-  int32 totalBoards = 1;
+  int32 totalBoards  = 1;
   int32 totalMembers = 2;
-  int32 totalTeams = 3;
+  int32 totalTeams   = 3;
 
-  int32 totalCards = 4;
+  int32 totalCards     = 4;
   int32 completedCards = 5;
-  int32 overdueCards = 6;
+  int32 overdueCards   = 6;
 
   repeated BoardPreview boardsPreview = 7;
 
@@ -161,15 +162,15 @@ message WorkspaceOverviewResponse {
 }
 
 message BoardPreview {
-  string id = 1;
-  string name = 2;
-  string visibility = 3;
-  int32 columnsCount = 4;
-  int32 cardCount = 5;
+  string id           = 1;
+  string name         = 2;
+  string visibility   = 3;
+  int32  columnsCount = 4;
+  int32  cardCount    = 5;
 }
 
 message Permissions {
-  bool canCreateBoard = 1;
+  bool canCreateBoard   = 1;
   bool canInviteMembers = 2;
   bool canEditWorkspace = 3;
 }
@@ -196,8 +197,6 @@ message WorkspaceStatsResponse {
   int32 totalTeams = 7;
 }
 
-
 message RemoveWorkspaceLogoRequest {
   string workspaceId = 1;
 }
-
