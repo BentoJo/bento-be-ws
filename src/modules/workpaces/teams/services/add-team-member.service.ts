@@ -76,7 +76,7 @@ export class AddTeamMemberService {
       .from(workspaceMembers)
       .where(
         and(
-          eq(workspaceMembers.id, data.workspaceMemberId),
+          eq(workspaceMembers.userId, data.workspaceMemberId),
           eq(workspaceMembers.workspaceId, data.workspaceId),
           eq(workspaceMembers.isActive, true),
         ),

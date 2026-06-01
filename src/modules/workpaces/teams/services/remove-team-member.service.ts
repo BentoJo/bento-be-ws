@@ -23,6 +23,8 @@ export class RemoveTeamMemberService {
   ): Promise<RemoveTeamMemberResponse> {
     this.validateInput(data);
 
+    const { workspaceId, teamId, userId } = data;
+
     if (!user?.id) {
       throw new RpcException({
         code: GrpcStatus.UNAUTHENTICATED,
@@ -31,7 +33,7 @@ export class RemoveTeamMemberService {
     }
 
     const actor = await this.workspaceMembersFuncs.getWorkspaceMember(
-      data.workspaceId,
+      workspaceId,
       user.id,
     );
 
@@ -44,7 +46,7 @@ export class RemoveTeamMemberService {
 
     const hasPermission = await this.hasAnyPermission(
       actor.authzRoleId,
-      data.workspaceId,
+      workspaceId,
       ['workspace:team:member:remove', 'workspace:teams:manage'],
     );
 
@@ -56,8 +58,8 @@ export class RemoveTeamMemberService {
     }
 
     const team = await this.teamsFuncs.findByIdAndWorkspace(
-      data.teamId,
-      data.workspaceId,
+      teamId,
+      workspaceId,
     );
 
     if (!team || team.deletedAt) {
@@ -67,9 +69,21 @@ export class RemoveTeamMemberService {
       });
     }
 
+    const targetMember = await this.workspaceMembersFuncs.getWorkspaceMember(
+      workspaceId,
+      userId,
+    );
+
+    if (!targetMember || !targetMember.isActive) {
+      throw new RpcException({
+        code: GrpcStatus.NOT_FOUND,
+        message: 'WORKSPACE_MEMBER_NOT_FOUND',
+      });
+    }
+
     const teamMember = await this.teamsFuncs.findTeamMember(
-      data.teamId,
-      data.workspaceMemberId,
+      teamId,
+      targetMember.userId,
     );
 
     if (!teamMember) {
@@ -79,7 +93,7 @@ export class RemoveTeamMemberService {
       });
     }
 
-    await this.teamsFuncs.removeTeamMember(data.teamId, data.workspaceMemberId);
+    await this.teamsFuncs.removeTeamMember(teamId, targetMember.userId);
 
     return {
       success: true,
@@ -95,9 +109,10 @@ export class RemoveTeamMemberService {
       });
     }
 
-    this.validateUuidField(data.workspaceId, 'Workspace ID');
-    this.validateUuidField(data.teamId, 'Team ID');
-    this.validateUuidField(data.workspaceMemberId, 'Workspace Member ID');
+    const { workspaceId, teamId, userId } = data;
+    this.validateUuidField(workspaceId, 'Workspace ID');
+    this.validateUuidField(teamId, 'Team ID');
+    this.validateUuidField(userId, 'User ID');
   }
 
   private validateUuidField(value: string, fieldName: string): void {

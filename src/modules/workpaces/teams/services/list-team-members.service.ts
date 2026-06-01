@@ -79,13 +79,16 @@ export class ListTeamMembersService {
 
     const total = await this.teamsFuncs.countTeamMembers(data.teamId);
 
-    const workspaceMemberIds = members.map((m) => m.workspaceMemberId);
+    const workspaceMemberUserIds = members.map((m) => m.workspaceMemberId);
     const workspaceMembers =
-      workspaceMemberIds.length > 0
-        ? await this.workspaceMembersFuncs.findActiveByIds(workspaceMemberIds)
+      workspaceMemberUserIds.length > 0
+        ? await this.workspaceMembersFuncs.findActiveByWorkspaceIdAndUserIds(
+            data.workspaceId,
+            workspaceMemberUserIds,
+          )
         : [];
 
-    const memberMap = new Map(workspaceMembers.map((m) => [m.id, m]));
+    const memberMap = new Map(workspaceMembers.map((m) => [m.userId, m]));
 
     const enrichedMembers = members
       .filter((m) => memberMap.has(m.workspaceMemberId))
