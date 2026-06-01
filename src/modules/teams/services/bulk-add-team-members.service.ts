@@ -2,27 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import db from '../../../../shared/configs/db.config';
-import { AuthzService } from '../../../authz/authz.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
-import { validateRequired, validateUUID } from '../../../../shared/validations';
+import db from '../../../shared/configs/db.config';
+import { AuthzService } from '../../authz/authz.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { validateRequired, validateUUID } from '../../../shared/validations';
 import type {
-  BulkRemoveTeamMembersRequest,
+  BulkAddTeamMembersRequest,
   BulkTeamMembersResponse,
 } from '../types';
 
 @Injectable()
-export class BulkRemoveTeamMembersService {
+export class BulkAddTeamMembersService {
   constructor(
     private readonly teamsFuncs: TeamsFuncs,
     private readonly workspaceMembersFuncs: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
   ) {}
 
-  async bulkRemoveTeamMembers(
-    data: BulkRemoveTeamMembersRequest,
+  async bulkAddTeamMembers(
+    data: BulkAddTeamMembersRequest,
     user: GrpcUser,
   ): Promise<BulkTeamMembersResponse> {
     this.validateInput(data);
@@ -49,7 +49,7 @@ export class BulkRemoveTeamMembersService {
     const hasPermission = await this.hasAnyPermission(
       actor.authzRoleId,
       data.workspaceId,
-      ['workspace:team:member:remove', 'workspace:teams:manage'],
+      ['workspace:team:member:add', 'workspace:teams:manage'],
     );
 
     if (!hasPermission) {
@@ -59,12 +59,12 @@ export class BulkRemoveTeamMembersService {
       });
     }
 
-    const team = await this.teamsFuncs.findByIdAndWorkspace(
+    const team = await this.teamsFuncs.findByIdAndWorkspaceActive(
       data.teamId,
       data.workspaceId,
     );
 
-    if (!team || team.deletedAt || team.archivedAt) {
+    if (!team || team.archivedAt) {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
         message: 'TEAM_NOT_FOUND',
@@ -76,7 +76,7 @@ export class BulkRemoveTeamMembersService {
     if (userIds.length === 0) {
       return {
         success: true,
-        message: 'No team members to remove',
+        message: 'No team members to add',
       };
     }
 
@@ -103,34 +103,36 @@ export class BulkRemoveTeamMembersService {
           tx,
         );
 
-      if (existing.length !== workspaceMemberIds.length) {
+      if (existing.length > 0) {
         throw new RpcException({
-          code: GrpcStatus.NOT_FOUND,
-          message: 'TEAM_MEMBER_NOT_FOUND',
+          code: GrpcStatus.ALREADY_EXISTS,
+          message: 'MEMBER_ALREADY_IN_TEAM',
         });
       }
 
-      const removed = await this.teamsFuncs.removeTeamMembers(
-        data.teamId,
-        workspaceMemberIds,
-        tx,
-      );
+      const rows = workspaceMemberIds.map((workspaceMemberId) => ({
+        workspaceId: data.workspaceId,
+        teamId: data.teamId,
+        workspaceMemberId,
+      }));
 
-      if (removed.length !== workspaceMemberIds.length) {
+      const inserted = await this.teamsFuncs.addTeamMembers(rows, tx);
+
+      if (inserted.length !== rows.length) {
         throw new RpcException({
           code: GrpcStatus.INTERNAL,
-          message: 'Failed to remove team members',
+          message: 'Failed to add team members',
         });
       }
     });
 
     return {
       success: true,
-      message: 'Team members removed successfully',
+      message: 'Team members added successfully',
     };
   }
 
-  private validateInput(data: BulkRemoveTeamMembersRequest): void {
+  private validateInput(data: BulkAddTeamMembersRequest): void {
     if (!data) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,

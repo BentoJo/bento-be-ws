@@ -2,25 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../../authz/authz.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
-import { validateRequired, validateUUID } from '../../../../shared/validations';
-import { RestoreTeamRequest, RestoreTeamResponse } from '../types';
+import { AuthzService } from '../../authz/authz.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { validateRequired, validateUUID } from '../../../shared/validations';
+import { ArchiveTeamRequest, ArchiveTeamResponse } from '../types';
 
 @Injectable()
-export class RestoreTeamService {
+export class ArchiveTeamService {
   constructor(
     private readonly teamsFuncs: TeamsFuncs,
     private readonly workspaceMembersFuncs: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
   ) {}
 
-  async restoreTeam(
-    data: RestoreTeamRequest,
+  async archiveTeam(
+    data: ArchiveTeamRequest,
     user: GrpcUser,
-  ): Promise<RestoreTeamResponse> {
+  ): Promise<ArchiveTeamResponse> {
     this.validateInput(data);
 
     if (!user?.id) {
@@ -45,7 +45,7 @@ export class RestoreTeamService {
     const hasPermission = await this.hasAnyPermission(
       actor.authzRoleId,
       data.workspaceId,
-      ['workspace:team:restore', 'workspace:teams:manage'],
+      ['workspace:team:archive', 'workspace:teams:manage'],
     );
 
     if (!hasPermission) {
@@ -55,49 +55,35 @@ export class RestoreTeamService {
       });
     }
 
-    const team = await this.teamsFuncs.findByIdAndWorkspace(
+    const team = await this.teamsFuncs.findByIdAndWorkspaceNotArchived(
       data.teamId,
       data.workspaceId,
     );
 
-    if (!team || !team.deletedAt) {
+    if (!team) {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
-        message: 'DELETED_TEAM_NOT_FOUND',
+        message: 'TEAM_NOT_FOUND',
       });
     }
 
-    const conflict =
-      await this.teamsFuncs.findByWorkspaceIdAndNameActiveExcludingId(
-        data.workspaceId,
-        team.name,
-        data.teamId,
-      );
+    const archived = await this.teamsFuncs.archive(data.teamId);
 
-    if (conflict) {
-      throw new RpcException({
-        code: GrpcStatus.ALREADY_EXISTS,
-        message: 'TEAM_NAME_ALREADY_EXISTS',
-      });
-    }
-
-    const restored = await this.teamsFuncs.restore(data.teamId);
-
-    if (!restored) {
+    if (!archived) {
       throw new RpcException({
         code: GrpcStatus.INTERNAL,
-        message: 'Failed to restore team',
+        message: 'Failed to archive team',
       });
     }
 
     return {
       success: true,
-      message: 'Team restored successfully',
-      restoredAt: (restored.updatedAt ?? new Date()).toISOString(),
+      message: 'Team archived successfully',
+      archivedAt: (archived.archivedAt ?? new Date()).toISOString(),
     };
   }
 
-  private validateInput(data: RestoreTeamRequest): void {
+  private validateInput(data: ArchiveTeamRequest): void {
     if (!data) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
