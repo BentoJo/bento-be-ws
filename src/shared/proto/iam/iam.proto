@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package user;
+import "auth.proto";
+
+service UserService {
+    rpc updateUserProfile (UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
+    rpc deleteUserProfile (DeleteUserProfileRequest) returns (DeleteUserProfileResponse);
+    rpc getUsersByIds (GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
+    rpc getUserById (GetUserByIdRequest) returns (GetUserByIdResponse);
+}
+
+message UpdateUserProfileRequest {
+    string user_id = 1;
+    optional string firstName = 2;
+    optional string lastName = 3;
+    optional string avatarUrl = 4;
+    optional string jobTitle = 5;
+    optional string bio = 6;
+    optional string phone = 7;
+    optional string dob = 8;
+    optional string gender = 9;
+}
+
+message UpdateUserProfileResponse {
+    auth.UserInfo user = 1;
+}
+
+message DeleteUserProfileRequest {
+    string user_id = 1;
+}
+
+message DeleteUserProfileResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message GetUsersByIdsRequest {
+    repeated string user_ids = 1;
+}
+
+message GetUsersByIdsResponse {
+    repeated auth.UserInfo users = 1;
+}
+
+message GetUserByIdRequest {
+    string user_id = 1;
+}
+
+message GetUserByIdResponse {
+    auth.UserInfo user = 1;
+}

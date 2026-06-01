@@ -1,8 +1,7 @@
 syntax = "proto3";
 
 package teams;
-
-import "common.proto";
+import "./common.proto";
 
 service TeamService {
   rpc CreateTeam(CreateTeamRequest)

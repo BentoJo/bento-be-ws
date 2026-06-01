@@ -185,6 +185,14 @@ export interface TeamMemberDetail {
 
   userId: string;
 
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string | null;
+  };
+
   joinedAt: string;
 }
 

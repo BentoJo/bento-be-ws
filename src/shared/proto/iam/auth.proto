@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package auth;
+
+message UserInfo {
+    string id = 1;
+    string email = 2;
+    string firstName = 3;
+    string lastName = 4;
+    optional string avatarUrl = 5;
+    optional string jobTitle = 6;
+    optional string bio = 7;
+    optional string phone = 8;
+    optional string dob = 9;
+    optional string gender = 10;
+}

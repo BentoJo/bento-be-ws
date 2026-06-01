@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthzModule } from '../../authz/authz.module';
+import { IamModule } from '../../iam/iam.module';
 import { WorkspaceFuncs } from '../../../shared/func/workspace';
 import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
 import { TeamsFuncs } from '../../../shared/func/teams';
@@ -20,7 +21,7 @@ import { ListMemberTeamsService } from './services/list-member-teams.service';
 import { GetTeamService } from './services/get-team.service';
 
 @Module({
-  imports: [AuthzModule],
+  imports: [AuthzModule, IamModule],
   controllers: [TeamsController],
   providers: [
     WorkspaceFuncs,
