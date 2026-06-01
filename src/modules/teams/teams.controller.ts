@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
-import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { GrpcUser } from '../../shared/decorators/meta.decorator';
 import { CreateTeamService } from './services/create-team.service';
 import type {
   AddTeamMemberRequest,

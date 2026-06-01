@@ -2,25 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../../authz/authz.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
-import { validateRequired, validateUUID } from '../../../../shared/validations';
-import { ListTeamMembersRequest, ListTeamMembersResponse } from '../types';
+import { AuthzService } from '../../authz/authz.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { validateRequired, validateUUID } from '../../../shared/validations';
+import { UnarchiveTeamRequest, UnarchiveTeamResponse } from '../types';
 
 @Injectable()
-export class ListTeamMembersService {
+export class UnarchiveTeamService {
   constructor(
     private readonly teamsFuncs: TeamsFuncs,
     private readonly workspaceMembersFuncs: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
   ) {}
 
-  async listTeamMembers(
-    data: ListTeamMembersRequest,
+  async unarchiveTeam(
+    data: UnarchiveTeamRequest,
     user: GrpcUser,
-  ): Promise<ListTeamMembersResponse> {
+  ): Promise<UnarchiveTeamResponse> {
     this.validateInput(data);
 
     if (!user?.id) {
@@ -45,7 +45,7 @@ export class ListTeamMembersService {
     const hasPermission = await this.hasAnyPermission(
       actor.authzRoleId,
       data.workspaceId,
-      ['workspace:team:member:read', 'workspace:teams:manage'],
+      ['workspace:team:unarchive', 'workspace:teams:manage'],
     );
 
     if (!hasPermission) {
@@ -60,59 +60,44 @@ export class ListTeamMembersService {
       data.workspaceId,
     );
 
-    if (!team || team.deletedAt) {
+    if (!team || !team.archivedAt || team.deletedAt) {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
-        message: 'TEAM_NOT_FOUND',
+        message: 'ARCHIVED_TEAM_NOT_FOUND',
       });
     }
 
-    const page = data.page ?? 1;
-    const limit = Math.min(data.limit ?? 20, 100);
-    const offset = (page - 1) * limit;
+    const conflict =
+      await this.teamsFuncs.findByWorkspaceIdAndNameActiveNotArchivedExcludingId(
+        data.workspaceId,
+        team.name,
+        data.teamId,
+      );
 
-    const members = await this.teamsFuncs.findTeamMembersPaginated(
-      data.teamId,
-      limit,
-      offset,
-    );
-
-    const total = await this.teamsFuncs.countTeamMembers(data.teamId);
-
-    const workspaceMemberIds = members.map((m) => m.workspaceMemberId);
-    const workspaceMembers =
-      workspaceMemberIds.length > 0
-        ? await this.workspaceMembersFuncs.findActiveByIds(workspaceMemberIds)
-        : [];
-
-    const memberMap = new Map(workspaceMembers.map((m) => [m.id, m]));
-
-    const enrichedMembers = members
-      .filter((m) => memberMap.has(m.workspaceMemberId))
-      .map((m) => {
-        const wm = memberMap.get(m.workspaceMemberId)!;
-        return {
-          workspaceMemberId: m.workspaceMemberId,
-          teamMemberId: m.id,
-          userId: wm.userId,
-          joinedAt: m.joinedAt?.toISOString() || new Date().toISOString(),
-        };
+    if (conflict) {
+      throw new RpcException({
+        code: GrpcStatus.ALREADY_EXISTS,
+        message: 'TEAM_NAME_ALREADY_EXISTS',
       });
+    }
 
-    const totalPages = Math.ceil(total / limit);
+    const unarchived = await this.teamsFuncs.unarchive(data.teamId);
+
+    if (!unarchived) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Failed to unarchive team',
+      });
+    }
 
     return {
-      members: enrichedMembers,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-      },
+      success: true,
+      message: 'Team unarchived successfully',
+      unarchivedAt: (unarchived.updatedAt ?? new Date()).toISOString(),
     };
   }
 
-  private validateInput(data: ListTeamMembersRequest): void {
+  private validateInput(data: UnarchiveTeamRequest): void {
     if (!data) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
@@ -122,20 +107,6 @@ export class ListTeamMembersService {
 
     this.validateUuidField(data.workspaceId, 'Workspace ID');
     this.validateUuidField(data.teamId, 'Team ID');
-
-    if (data.page !== undefined && data.page < 1) {
-      throw new RpcException({
-        code: GrpcStatus.INVALID_ARGUMENT,
-        message: 'Page must be >= 1',
-      });
-    }
-
-    if (data.limit !== undefined && (data.limit < 1 || data.limit > 100)) {
-      throw new RpcException({
-        code: GrpcStatus.INVALID_ARGUMENT,
-        message: 'Limit must be between 1 and 100',
-      });
-    }
   }
 
   private validateUuidField(value: string, fieldName: string): void {

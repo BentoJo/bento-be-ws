@@ -154,7 +154,7 @@ export interface RemoveTeamMemberRequest {
 
   teamId: string;
 
-  workspaceMemberId: string;
+  userId: string;
 }
 
 export interface RemoveTeamMemberResponse {

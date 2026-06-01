@@ -2,26 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../../authz/authz.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
-import { validateRequired, validateUUID } from '../../../../shared/validations';
-import { UnarchiveTeamRequest, UnarchiveTeamResponse } from '../types';
+import { AuthzService } from '../../authz/authz.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { validateRequired, validateUUID } from '../../../shared/validations';
+import { RemoveTeamMemberRequest, RemoveTeamMemberResponse } from '../types';
 
 @Injectable()
-export class UnarchiveTeamService {
+export class RemoveTeamMemberService {
   constructor(
     private readonly teamsFuncs: TeamsFuncs,
     private readonly workspaceMembersFuncs: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
   ) {}
 
-  async unarchiveTeam(
-    data: UnarchiveTeamRequest,
+  async removeTeamMember(
+    data: RemoveTeamMemberRequest,
     user: GrpcUser,
-  ): Promise<UnarchiveTeamResponse> {
+  ): Promise<RemoveTeamMemberResponse> {
     this.validateInput(data);
+
+    const { workspaceId, teamId, userId } = data;
 
     if (!user?.id) {
       throw new RpcException({
@@ -31,7 +33,7 @@ export class UnarchiveTeamService {
     }
 
     const actor = await this.workspaceMembersFuncs.getWorkspaceMember(
-      data.workspaceId,
+      workspaceId,
       user.id,
     );
 
@@ -44,8 +46,8 @@ export class UnarchiveTeamService {
 
     const hasPermission = await this.hasAnyPermission(
       actor.authzRoleId,
-      data.workspaceId,
-      ['workspace:team:unarchive', 'workspace:teams:manage'],
+      workspaceId,
+      ['workspace:team:member:remove', 'workspace:teams:manage'],
     );
 
     if (!hasPermission) {
@@ -56,48 +58,50 @@ export class UnarchiveTeamService {
     }
 
     const team = await this.teamsFuncs.findByIdAndWorkspace(
-      data.teamId,
-      data.workspaceId,
+      teamId,
+      workspaceId,
     );
 
-    if (!team || !team.archivedAt || team.deletedAt) {
+    if (!team || team.deletedAt) {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
-        message: 'ARCHIVED_TEAM_NOT_FOUND',
+        message: 'TEAM_NOT_FOUND',
       });
     }
 
-    const conflict =
-      await this.teamsFuncs.findByWorkspaceIdAndNameActiveNotArchivedExcludingId(
-        data.workspaceId,
-        team.name,
-        data.teamId,
-      );
+    const targetMember = await this.workspaceMembersFuncs.getWorkspaceMember(
+      workspaceId,
+      userId,
+    );
 
-    if (conflict) {
+    if (!targetMember || !targetMember.isActive) {
       throw new RpcException({
-        code: GrpcStatus.ALREADY_EXISTS,
-        message: 'TEAM_NAME_ALREADY_EXISTS',
+        code: GrpcStatus.NOT_FOUND,
+        message: 'WORKSPACE_MEMBER_NOT_FOUND',
       });
     }
 
-    const unarchived = await this.teamsFuncs.unarchive(data.teamId);
+    const teamMember = await this.teamsFuncs.findTeamMember(
+      teamId,
+      targetMember.userId,
+    );
 
-    if (!unarchived) {
+    if (!teamMember) {
       throw new RpcException({
-        code: GrpcStatus.INTERNAL,
-        message: 'Failed to unarchive team',
+        code: GrpcStatus.NOT_FOUND,
+        message: 'TEAM_MEMBER_NOT_FOUND',
       });
     }
+
+    await this.teamsFuncs.removeTeamMember(teamId, targetMember.userId);
 
     return {
       success: true,
-      message: 'Team unarchived successfully',
-      unarchivedAt: (unarchived.updatedAt ?? new Date()).toISOString(),
+      message: 'Team member removed successfully',
     };
   }
 
-  private validateInput(data: UnarchiveTeamRequest): void {
+  private validateInput(data: RemoveTeamMemberRequest): void {
     if (!data) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
@@ -105,8 +109,10 @@ export class UnarchiveTeamService {
       });
     }
 
-    this.validateUuidField(data.workspaceId, 'Workspace ID');
-    this.validateUuidField(data.teamId, 'Team ID');
+    const { workspaceId, teamId, userId } = data;
+    this.validateUuidField(workspaceId, 'Workspace ID');
+    this.validateUuidField(teamId, 'Team ID');
+    this.validateUuidField(userId, 'User ID');
   }
 
   private validateUuidField(value: string, fieldName: string): void {

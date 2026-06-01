@@ -2,16 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../../authz/authz.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceFuncs } from '../../../../shared/func/workspace';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
+import { AuthzService } from '../../authz/authz.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceFuncs } from '../../../shared/func/workspace';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
 import {
   validateRequired,
   validateUUID,
   validateUrl,
-} from '../../../../shared/validations';
+} from '../../../shared/validations';
 import type { CreateTeamRequest, TeamResponse } from '../types';
 
 @Injectable()

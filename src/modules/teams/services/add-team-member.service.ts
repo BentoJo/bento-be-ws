@@ -3,13 +3,13 @@ import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { and, eq } from 'drizzle-orm';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../../authz/authz.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import db from '../../../../shared/configs/db.config';
-import { workspaceMembers } from '../../../../shared/db/schema';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
-import { validateRequired, validateUUID } from '../../../../shared/validations';
+import { AuthzService } from '../../authz/authz.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import db from '../../../shared/configs/db.config';
+import { workspaceMembers } from '../../../shared/db/schema';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { validateRequired, validateUUID } from '../../../shared/validations';
 import type { AddTeamMemberRequest, TeamMemberResponse } from '../types';
 
 @Injectable()
@@ -76,7 +76,7 @@ export class AddTeamMemberService {
       .from(workspaceMembers)
       .where(
         and(
-          eq(workspaceMembers.id, data.workspaceMemberId),
+          eq(workspaceMembers.userId, data.workspaceMemberId),
           eq(workspaceMembers.workspaceId, data.workspaceId),
           eq(workspaceMembers.isActive, true),
         ),

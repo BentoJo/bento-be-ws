@@ -2,25 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../../authz/authz.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
-import { validateRequired, validateUUID } from '../../../../shared/validations';
-import { RemoveTeamMemberRequest, RemoveTeamMemberResponse } from '../types';
+import { AuthzService } from '../../authz/authz.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { validateRequired, validateUUID } from '../../../shared/validations';
+import { RestoreTeamRequest, RestoreTeamResponse } from '../types';
 
 @Injectable()
-export class RemoveTeamMemberService {
+export class RestoreTeamService {
   constructor(
     private readonly teamsFuncs: TeamsFuncs,
     private readonly workspaceMembersFuncs: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
   ) {}
 
-  async removeTeamMember(
-    data: RemoveTeamMemberRequest,
+  async restoreTeam(
+    data: RestoreTeamRequest,
     user: GrpcUser,
-  ): Promise<RemoveTeamMemberResponse> {
+  ): Promise<RestoreTeamResponse> {
     this.validateInput(data);
 
     if (!user?.id) {
@@ -45,7 +45,7 @@ export class RemoveTeamMemberService {
     const hasPermission = await this.hasAnyPermission(
       actor.authzRoleId,
       data.workspaceId,
-      ['workspace:team:member:remove', 'workspace:teams:manage'],
+      ['workspace:team:restore', 'workspace:teams:manage'],
     );
 
     if (!hasPermission) {
@@ -60,34 +60,44 @@ export class RemoveTeamMemberService {
       data.workspaceId,
     );
 
-    if (!team || team.deletedAt) {
+    if (!team || !team.deletedAt) {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
-        message: 'TEAM_NOT_FOUND',
+        message: 'DELETED_TEAM_NOT_FOUND',
       });
     }
 
-    const teamMember = await this.teamsFuncs.findTeamMember(
-      data.teamId,
-      data.workspaceMemberId,
-    );
+    const conflict =
+      await this.teamsFuncs.findByWorkspaceIdAndNameActiveExcludingId(
+        data.workspaceId,
+        team.name,
+        data.teamId,
+      );
 
-    if (!teamMember) {
+    if (conflict) {
       throw new RpcException({
-        code: GrpcStatus.NOT_FOUND,
-        message: 'TEAM_MEMBER_NOT_FOUND',
+        code: GrpcStatus.ALREADY_EXISTS,
+        message: 'TEAM_NAME_ALREADY_EXISTS',
       });
     }
 
-    await this.teamsFuncs.removeTeamMember(data.teamId, data.workspaceMemberId);
+    const restored = await this.teamsFuncs.restore(data.teamId);
+
+    if (!restored) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Failed to restore team',
+      });
+    }
 
     return {
       success: true,
-      message: 'Team member removed successfully',
+      message: 'Team restored successfully',
+      restoredAt: (restored.updatedAt ?? new Date()).toISOString(),
     };
   }
 
-  private validateInput(data: RemoveTeamMemberRequest): void {
+  private validateInput(data: RestoreTeamRequest): void {
     if (!data) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
@@ -97,7 +107,6 @@ export class RemoveTeamMemberService {
 
     this.validateUuidField(data.workspaceId, 'Workspace ID');
     this.validateUuidField(data.teamId, 'Team ID');
-    this.validateUuidField(data.workspaceMemberId, 'Workspace Member ID');
   }
 
   private validateUuidField(value: string, fieldName: string): void {
