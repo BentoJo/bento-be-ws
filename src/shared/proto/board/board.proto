@@ -61,7 +61,7 @@ message CreateBoardRequest {
 
   string name = 2;
 
-  bool isPrivate = 3;
+  optional string visibility = 3;
 
   optional string icon = 4;
 }
@@ -73,7 +73,7 @@ message BoardResponse {
 
   string name = 3;
 
-  bool isPrivate = 4;
+  string visibility = 4;
 
   optional string icon = 5;
 
@@ -97,7 +97,7 @@ message UpdateBoardRequest {
 
   optional string name = 3;
 
-  optional bool isPrivate = 4;
+  optional string visibility = 4;
 
   optional string icon = 5;
 }
@@ -143,7 +143,7 @@ message BoardListItem {
 
   string name = 2;
 
-  bool isPrivate = 3;
+  string visibility = 3;
 
   optional string icon = 4;
 
