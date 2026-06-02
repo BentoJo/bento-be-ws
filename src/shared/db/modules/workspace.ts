@@ -61,7 +61,6 @@ export const workspaceMembers = pgTable(
   (table) => [
     index('workspace_members_workspace_id_idx').on(table.workspaceId),
     index('workspace_members_user_id_idx').on(table.userId),
-    unique('workspace_members_user_id_unique').on(table.userId),
     unique('workspace_members_workspace_user_unique').on(
       table.workspaceId,
       table.userId,
@@ -119,15 +118,15 @@ export const teamMembers = pgTable(
     teamId: uuid('team_id')
       .notNull()
       .references(() => teams.id),
-    workspaceMemberId: uuid('workspace_member_user_id')
+    workspaceMemberId: uuid('workspace_member_id')
       .notNull()
-      .references(() => workspaceMembers.userId),
+      .references(() => workspaceMembers.id),
     joinedAt: timestamp('joined_at').defaultNow(),
     createdAt: timestamp('created_at').defaultNow(),
   },
   (table) => [
     index('team_members_team_id_idx').on(table.teamId),
-    index('team_members_workspace_member_user_idx').on(table.workspaceMemberId),
+    index('team_members_workspace_member_idx').on(table.workspaceMemberId),
     unique('team_members_team_workspace_member_unique').on(
       table.teamId,
       table.workspaceMemberId,
