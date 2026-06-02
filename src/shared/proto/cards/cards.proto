@@ -1,0 +1,561 @@
+syntax = "proto3";
+
+package cards;
+
+import "../common.proto";
+
+service CardService {
+  // ---------------------------
+  // CARD CRUD
+  // ---------------------------
+  rpc CreateCard(CreateCardRequest)
+      returns (CardResponse);
+
+  rpc GetCard(GetCardRequest)
+      returns (CardResponse);
+
+  rpc UpdateCard(UpdateCardRequest)
+      returns (CardResponse);
+
+  rpc DeleteCard(DeleteCardRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RestoreCard(RestoreCardRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ArchiveCard(ArchiveCardRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc MoveCard(MoveCardRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListColumnCards(ListColumnCardsRequest)
+      returns (ListCardsResponse);
+
+  rpc ListBoardCards(ListBoardCardsRequest)
+      returns (ListCardsResponse);
+
+  rpc ListWorkspaceCardsByDate(ListWorkspaceCardsByDateRequest)
+      returns (ListCardsResponse);
+
+  // ---------------------------
+  // ASSIGNEES
+  // ---------------------------
+  rpc AddCardAssignee(AddCardAssigneeRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RemoveCardAssignee(RemoveCardAssigneeRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc ListCardAssignees(ListCardAssigneesRequest)
+      returns (ListCardAssigneesResponse);
+
+  // ---------------------------
+  // LABELS
+  // ---------------------------
+  rpc AddCardLabel(AddCardLabelRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc RemoveCardLabel(RemoveCardLabelRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc CreateLabel(CreateLabelRequest)
+      returns (LabelResponse);
+
+  rpc ListWorkspaceLabels(ListWorkspaceLabelsRequest)
+      returns (ListLabelsResponse);
+
+  rpc DeleteLabel(DeleteLabelRequest)
+      returns (workspace.common.ActionResponse);
+
+  // ---------------------------
+  // COMMENTS
+  // ---------------------------
+  rpc AddComment(AddCommentRequest)
+      returns (CommentResponse);
+
+  rpc ListCardComments(ListCardCommentsRequest)
+      returns (ListCommentsResponse);
+
+  rpc DeleteComment(DeleteCommentRequest)
+      returns (workspace.common.ActionResponse);
+
+  // ---------------------------
+  // CHECKLISTS
+  // ---------------------------
+  rpc CreateChecklist(CreateChecklistRequest)
+      returns (ChecklistResponse);
+
+  rpc AddChecklistItem(AddChecklistItemRequest)
+      returns (ChecklistItemResponse);
+
+  rpc ToggleChecklistItem(ToggleChecklistItemRequest)
+      returns (ChecklistItemResponse);
+
+  rpc ListCardChecklists(ListCardChecklistsRequest)
+      returns (ListChecklistsResponse);
+
+  rpc DeleteChecklist(DeleteChecklistRequest)
+      returns (workspace.common.ActionResponse);
+
+  rpc DeleteChecklistItem(DeleteChecklistItemRequest)
+      returns (workspace.common.ActionResponse);
+}
+
+// ===========================
+// CARD MESSAGES
+// ===========================
+
+message CreateCardRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+
+  string title = 4;
+
+  optional string descriptionText = 5;
+
+  optional string startDate = 6;
+
+  optional string dueDate = 7;
+
+  optional string priority = 8;
+
+  optional bool isPrivate = 9;
+
+  optional double position = 10;
+}
+
+message CardResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string boardId = 3;
+
+  string columnId = 4;
+
+  string title = 5;
+
+  optional string descriptionText = 6;
+
+  optional string startDate = 7;
+
+  optional string dueDate = 8;
+
+  string priority = 9;
+
+  bool isCompleted = 10;
+
+  string progress = 11;
+
+  bool isPrivate = 12;
+
+  double position = 13;
+
+  string createdBy = 14;
+
+  bool isArchived = 15;
+
+  string createdAt = 16;
+
+  optional string updatedAt = 17;
+}
+
+message GetCardRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+}
+
+message UpdateCardRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  optional string title = 4;
+
+  optional string descriptionText = 5;
+
+  optional string startDate = 6;
+
+  optional string dueDate = 7;
+
+  optional string priority = 8;
+
+  optional bool isCompleted = 9;
+
+  optional string progress = 10;
+
+  optional bool isPrivate = 11;
+}
+
+message DeleteCardRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+}
+
+message RestoreCardRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+}
+
+message ArchiveCardRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+}
+
+message MoveCardRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string columnId = 4;
+
+  double position = 5;
+}
+
+message ListColumnCardsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string columnId = 3;
+
+  optional bool includeArchived = 4;
+}
+
+message ListBoardCardsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  optional bool includeArchived = 3;
+}
+
+message ListWorkspaceCardsByDateRequest {
+  string workspaceId = 1;
+
+  string from = 2;
+
+  string to = 3;
+}
+
+message ListCardsResponse {
+  repeated CardResponse cards = 1;
+}
+
+// ===========================
+// ASSIGNEE MESSAGES
+// ===========================
+
+message AddCardAssigneeRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string assigneeType = 4;
+
+  optional string boardMemberId = 5;
+
+  optional string teamId = 6;
+}
+
+message RemoveCardAssigneeRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string assigneeId = 4;
+}
+
+message ListCardAssigneesRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+}
+
+message CardAssignee {
+  string id = 1;
+
+  string cardId = 2;
+
+  string assigneeType = 3;
+
+  optional string boardMemberId = 4;
+
+  optional string teamId = 5;
+
+  string assignedBy = 6;
+
+  string createdAt = 7;
+}
+
+message ListCardAssigneesResponse {
+  repeated CardAssignee assignees = 1;
+}
+
+// ===========================
+// LABEL MESSAGES
+// ===========================
+
+message CreateLabelRequest {
+  string workspaceId = 1;
+
+  string name = 2;
+
+  optional string icon = 3;
+
+  optional string type = 4;
+}
+
+message LabelResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string name = 3;
+
+  optional string icon = 4;
+
+  string type = 5;
+
+  string createdBy = 6;
+
+  string createdAt = 7;
+}
+
+message ListWorkspaceLabelsRequest {
+  string workspaceId = 1;
+}
+
+message ListLabelsResponse {
+  repeated LabelResponse labels = 1;
+}
+
+message DeleteLabelRequest {
+  string workspaceId = 1;
+
+  string labelId = 2;
+}
+
+message AddCardLabelRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string labelId = 4;
+}
+
+message RemoveCardLabelRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string labelId = 4;
+}
+
+// ===========================
+// COMMENT MESSAGES
+// ===========================
+
+message AddCommentRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string contentText = 4;
+
+  optional string parentCommentId = 5;
+}
+
+message CommentResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string cardId = 3;
+
+  optional string parentCommentId = 4;
+
+  string workspaceMemberId = 5;
+
+  optional string contentText = 6;
+
+  string createdAt = 7;
+
+  optional string updatedAt = 8;
+}
+
+message ListCardCommentsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  optional int32 page = 4;
+
+  optional int32 limit = 5;
+}
+
+message ListCommentsResponse {
+  repeated CommentResponse comments = 1;
+
+  workspace.common.PaginationMeta pagination = 2;
+}
+
+message DeleteCommentRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string commentId = 4;
+}
+
+// ===========================
+// CHECKLIST MESSAGES
+// ===========================
+
+message CreateChecklistRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string title = 4;
+
+  optional double position = 5;
+}
+
+message ChecklistResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string cardId = 3;
+
+  string title = 4;
+
+  double position = 5;
+
+  string createdBy = 6;
+
+  string createdAt = 7;
+
+  repeated ChecklistItemResponse items = 8;
+}
+
+message AddChecklistItemRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string checklistId = 4;
+
+  string title = 5;
+
+  optional double position = 6;
+}
+
+message ChecklistItemResponse {
+  string id = 1;
+
+  string workspaceId = 2;
+
+  string checklistId = 3;
+
+  string title = 4;
+
+  bool isCompleted = 5;
+
+  double position = 6;
+
+  optional string completedBy = 7;
+
+  optional string completedAt = 8;
+
+  string createdAt = 9;
+}
+
+message ToggleChecklistItemRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string checklistId = 4;
+
+  string itemId = 5;
+
+  bool isCompleted = 6;
+}
+
+message ListCardChecklistsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+}
+
+message ListChecklistsResponse {
+  repeated ChecklistResponse checklists = 1;
+}
+
+message DeleteChecklistRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string checklistId = 4;
+}
+
+message DeleteChecklistItemRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
+
+  string checklistId = 4;
+
+  string itemId = 5;
+}

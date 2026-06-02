@@ -27,6 +27,7 @@ service WorkspaceRoleService {
 
 message GetWorkspaceRolesRequest {
   string workspaceId = 1;
+  string roleId = 2;
 }
 
 message GetWorkspaceRolesResponse
@@ -62,6 +63,7 @@ message DeleteWorkspaceRoleReferenceRequest {
   string workspaceId = 1;
 
   string authzRoleId = 2;
+  string roleId = 3;
 }
 
 // get roles from AuthZ
@@ -69,6 +71,7 @@ message GetWorkspaceRoleFromAuthZRequest {
   string workspaceId = 1;
 
   string authzRoleId = 2;
+  string roleId = 3;
 }
 
 // Get Role Permissions
@@ -76,6 +79,7 @@ message GetWorkspaceRolesPermissionsFromAuthZRequest {
   string workspaceId = 1;
 
   string authzRoleId = 2;
+  string roleId = 3;
 }
 
 message WorkspaceRolePermissionsResponse {
