@@ -154,9 +154,9 @@ message UnarchiveTeamRequest {
 message ListTeamsRequest {
   string workspaceId = 1;
 
-  int32 page = 2;
+  optional int32 page = 2;
 
-  int32 limit = 3;
+  optional int32 limit = 3;
 
   optional string search = 4;
 
@@ -228,9 +228,9 @@ message ListTeamMembersRequest {
 
   string teamId = 2;
 
-  int32 page = 3;
+  optional int32 page = 3;
 
-  int32 limit = 4;
+  optional int32 limit = 4;
 
   optional string search = 5;
 }
