@@ -39,9 +39,9 @@ service WorkspaceMemberService {
 message ListWorkspaceInvitesRequest {
   string workspaceId = 1;
 
-  int32 page = 2;
+  optional int32 page = 2;
 
-  int32 limit = 3;
+  optional int32 limit = 3;
 
   optional string status = 4;
 
@@ -158,9 +158,9 @@ message WorkspaceMemberResponse {
 message ListWorkspaceMembersRequest {
   string workspaceId = 1;
 
-  int32 page = 2;
+  optional int32 page = 2;
 
-  int32 limit = 3;
+  optional int32 limit = 3;
 
   optional string search = 4;
 }

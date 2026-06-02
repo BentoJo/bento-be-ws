@@ -61,7 +61,7 @@ message CreateBoardRequest {
 
   string name = 2;
 
-  bool isPrivate = 3;
+  optional string visibility = 3;
 
   optional string icon = 4;
 }
@@ -73,7 +73,7 @@ message BoardResponse {
 
   string name = 3;
 
-  bool isPrivate = 4;
+  string visibility = 4;
 
   optional string icon = 5;
 
@@ -97,7 +97,7 @@ message UpdateBoardRequest {
 
   optional string name = 3;
 
-  optional bool isPrivate = 4;
+  optional string visibility = 4;
 
   optional string icon = 5;
 }
@@ -129,9 +129,9 @@ message UnarchiveBoardRequest {
 message ListWorkspaceBoardsRequest {
   string workspaceId = 1;
 
-  int32 page = 2;
+  optional int32 page = 2;
 
-  int32 limit = 3;
+  optional int32 limit = 3;
 
   optional string search = 4;
 
@@ -143,7 +143,7 @@ message BoardListItem {
 
   string name = 2;
 
-  bool isPrivate = 3;
+  string visibility = 3;
 
   optional string icon = 4;
 
@@ -199,9 +199,9 @@ message ListBoardMembersRequest {
 
   string boardId = 2;
 
-  int32 page = 3;
+  optional int32 page = 3;
 
-  int32 limit = 4;
+  optional int32 limit = 4;
 
   optional string search = 5;
 }
@@ -271,9 +271,9 @@ message UnfavoriteBoardRequest {
 message ListFavoriteBoardsRequest {
   string workspaceId = 1;
 
-  int32 page = 2;
+  optional int32 page = 2;
 
-  int32 limit = 3;
+  optional int32 limit = 3;
 }
 
 message FavoriteBoardListItem {
@@ -310,8 +310,8 @@ message ListBoardWatchersRequest {
   string workspaceId = 1;
   string boardId = 2;
 
-  int32 page = 3;
-  int32 limit = 4;
+  optional int32 page = 3;
+  optional int32 limit = 4;
 }
 
 message ListBoardWatchersResponse {

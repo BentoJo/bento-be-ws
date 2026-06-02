@@ -28,8 +28,8 @@ export class ListUserWorkspacesService {
       });
     }
 
-    const page = Math.max(1, data.page ?? 1);
-    const limit = Math.min(100, Math.max(1, data.limit ?? 20));
+    const page = Math.max(1, parseInt(data.page ?? '1', 10));
+    const limit = Math.min(100, Math.max(1, parseInt(data.limit ?? '20', 10)));
     const offset = (page - 1) * limit;
     const includeArchived = data.includeArchived ?? false;
     const searchClause = data.search?.trim()
@@ -96,7 +96,8 @@ export class ListUserWorkspacesService {
 
     if (
       data.page !== undefined &&
-      (!Number.isInteger(data.page) || data.page < 1)
+      (!Number.isInteger(parseInt(data.page, 10)) ||
+        parseInt(data.page, 10) < 1)
     ) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
@@ -106,7 +107,8 @@ export class ListUserWorkspacesService {
 
     if (
       data.limit !== undefined &&
-      (!Number.isInteger(data.limit) || data.limit < 1)
+      (!Number.isInteger(parseInt(data.limit, 10)) ||
+        parseInt(data.limit, 10) < 1)
     ) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,

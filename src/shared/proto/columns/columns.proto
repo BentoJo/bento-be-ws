@@ -201,9 +201,9 @@ message ListColumnWatchersRequest {
 
   string columnId = 3;
 
-  int32 page = 4;
+  optional int32 page = 4;
 
-  int32 limit = 5;
+  optional int32 limit = 5;
 }
 
 message ListColumnWatchersResponse {
@@ -219,9 +219,9 @@ message ListColumnCardsRequest {
 
   string columnId = 3;
 
-  int32 page = 4;
+  optional int32 page = 4;
 
-  int32 limit = 5;
+  optional int32 limit = 5;
 }
 
 message ColumnCardListItem {
