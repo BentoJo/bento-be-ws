@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import db from './shared/configs/db.config';
 import {
   workspaces,
@@ -21,72 +20,83 @@ import {
   cardComments,
   cardChecklists,
   cardChecklistItems,
-  cardAttachments,
-  mentions,
-  watchers,
 } from './shared/db/modules/cards';
 
 /* =====================================================================
-   DETERMINISTIC IDS — identical algorithm + names as iam / authz seeds
-   so cross-service references line up (userId, workspaceId, authzRoleId).
+   SHARED CONTRACT — IDENTICAL across iam / authz / ws seeds.
+   Do NOT change ids/keys/names. (Pasted verbatim.)
 ===================================================================== */
-
-function detUuid(name: string): string {
+import { createHash } from 'node:crypto';
+export function detUuid(name: string): string {
   const h = createHash('sha1').update(`bento:${name}`).digest('hex');
-  const variant = ((parseInt(h.slice(16, 18), 16) & 0x3f) | 0x80)
-    .toString(16)
-    .padStart(2, '0');
-  return [
-    h.slice(0, 8),
-    h.slice(8, 12),
-    '5' + h.slice(13, 16),
-    variant + h.slice(18, 20),
-    h.slice(20, 32),
-  ].join('-');
+  const variant = ((parseInt(h.slice(16, 18), 16) & 0x3f) | 0x80).toString(16).padStart(2, '0');
+  return [h.slice(0,8), h.slice(8,12), '4'+h.slice(13,16), variant+h.slice(18,20), h.slice(20,32)].join('-');
 }
-
-const userId = (i: number) => detUuid(`user:${i}`);
-const workspaceId = (w: number) => detUuid(`workspace:${w}`);
-const authzRoleId = (w: number, role: string) =>
-  detUuid(`authzrole:${w}:${role}`);
-const wsMemberId = (w: number, u: number) => detUuid(`wsmember:${w}:${u}`);
-const boardMemberId = (w: number, b: number, u: number) =>
-  detUuid(`bmember:${w}:${b}:${u}`);
-
-const ROLE_NAMES = ['OWNER', 'ADMIN', 'EDITOR', 'VIEWER'] as const;
-const roleForIndex = (n: number) =>
-  n === 0 ? 'OWNER' : n === 1 ? 'ADMIN' : n <= 3 ? 'EDITOR' : 'VIEWER';
+const REAL_USER = { key: 'me', id: 'b2fcf3fe-8b7c-44b3-9552-e51ae0ab35dc' };
+const USERS = [
+  REAL_USER,
+  ...['omar','lina','yousef','sara','khaled','nour'].map(k => ({ key: k, id: detUuid(`user:${k}`) })),
+];
+const uid = (key: string) => USERS.find(u => u.key === key)!.id;
+const WORKSPACES = [
+  { key: 'acme',  name: 'Acme Product', ownerKey: 'me'   },
+  { key: 'nova',  name: 'Nova Labs',    ownerKey: 'omar' },
+  { key: 'orbit', name: 'Orbit Studio', ownerKey: 'me'   },
+].map(w => ({ ...w, id: detUuid(`ws:${w.key}`) }));
+const wsId = (key: string) => WORKSPACES.find(w => w.key === key)!.id;
+// wsKey -> [userKey, role]
+const MEMBERSHIPS: Record<string, [string, string][]> = {
+  acme:  [['me','OWNER'],['omar','ADMIN'],['lina','EDITOR'],['sara','EDITOR'],['yousef','VIEWER'],['nour','VIEWER']],
+  nova:  [['omar','OWNER'],['me','ADMIN'],['yousef','EDITOR'],['khaled','VIEWER']],
+  orbit: [['me','OWNER'],['lina','ADMIN'],['sara','EDITOR'],['nour','VIEWER']],
+};
+const wsRoleId = (workspaceId: string, role: string) => detUuid(`role:${workspaceId}:${role}`);   // authz roles.id (already created by authz seed)
+const memberRowId = (workspaceId: string, userKey: string) => detUuid(`member:${workspaceId}:${userKey}`); // workspace_members.id
 
 /* =====================================================================
-   TOPOLOGY (replicated in iam + authz seeds)
+   WS-LOCAL DETERMINISTIC IDS (only this service inserts these rows)
 ===================================================================== */
 
-const WORKSPACES = [
-  { idx: 0, name: 'Acme Product', owner: 1, members: [1, 2, 3, 4, 5, 6, 7, 8] },
-  { idx: 1, name: 'Nova Labs', owner: 9, members: [9, 10, 11, 12, 13, 14, 15, 16] },
-  { idx: 2, name: 'Orbit Studio', owner: 17, members: [17, 18, 19, 20, 21, 22, 23, 24, 25] },
-];
+const ROLE_NAMES = ['OWNER', 'ADMIN', 'EDITOR', 'VIEWER'] as const;
+const wsRoleRowId = (workspaceId: string, role: string) =>
+  detUuid(`wsrole:${workspaceId}:${role}`); // workspace_roles.id
+const teamRowId = (workspaceId: string, teamKey: string) =>
+  detUuid(`team:${workspaceId}:${teamKey}`); // teams.id
+const boardRowId = (workspaceId: string, n: number) =>
+  detUuid(`board:${workspaceId}:${n}`); // boards.id
+const colRowId = (boardId: string, n: number) => detUuid(`col:${boardId}:${n}`); // board_columns.id
+const boardMemberRowId = (boardId: string, userKey: string) =>
+  detUuid(`bmember:${boardId}:${userKey}`); // board_members.id
+const labelRowId = (workspaceId: string, n: number) =>
+  detUuid(`label:${workspaceId}:${n}`); // labels.id
+const cardRowId = (columnId: string, n: number) =>
+  detUuid(`card:${columnId}:${n}`); // cards.id
 
-const TEAM_NAMES = ['Engineering', 'Design', 'Marketing'];
+/* =====================================================================
+   STATIC DATA
+===================================================================== */
+
+const TEAMS = [
+  { key: 'design', name: 'Design', icon: '🎨' },
+  { key: 'engineering', name: 'Engineering', icon: '🛠️' },
+];
 const BOARD_NAMES = ['Roadmap', 'Sprint Board', 'Bugs & Support'];
 const COLUMNS = ['Backlog', 'To Do', 'In Progress', 'Done'];
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
 const LABELS = [
-  { name: 'Bug', type: 'bug', icon: '🐛' },
-  { name: 'Feature', type: 'feature', icon: '✨' },
-  { name: 'Enhancement', type: 'enhancement', icon: '⚡' },
-  { name: 'Urgent', type: 'default', icon: '🔥' },
-  { name: 'Docs', type: 'default', icon: '📝' },
+  { name: 'UI/UX', icon: '🎨', type: 'default' as const },
+  { name: 'Bug', icon: '🐛', type: 'bug' as const },
+  { name: 'Feature', icon: '✨', type: 'feature' as const },
+  { name: 'High Priority', icon: '🔥', type: 'enhancement' as const },
 ];
 const CARD_TITLES = [
   'Set up CI pipeline', 'Design onboarding flow', 'Fix login redirect bug',
   'Write API docs', 'Optimize DB queries', 'Add dark mode', 'Refactor auth module',
   'Implement search', 'Update dependencies', 'Improve test coverage',
   'Add rate limiting', 'Build settings page', 'Migrate to new schema',
-  'Create landing page', 'Add export feature',
 ];
 
-const CARDS_PER_BOARD = 10;
+const CARDS_PER_BOARD = 9;
 const pos = (n: number) => (n * 1000).toFixed(4);
 const daysFromNow = (d: number) => new Date(Date.now() + d * 86_400_000);
 const doc = (text: string) => ({
@@ -99,6 +109,7 @@ async function insertBatch<T>(
   rows: T[],
   conflictTarget?: any,
 ): Promise<void> {
+  if (rows.length === 0) return;
   for (let i = 0; i < rows.length; i += 500) {
     await db
       .insert(table)
@@ -130,132 +141,136 @@ async function seedWorkspace() {
   const commentRows: any[] = [];
   const checklistRows: any[] = [];
   const checklistItemRows: any[] = [];
-  const attachmentRows: any[] = [];
-  const mentionRows: any[] = [];
-  const watcherRows: any[] = [];
 
   for (const ws of WORKSPACES) {
-    const w = ws.idx;
-    const wid = workspaceId(w);
-    const owner = userId(ws.owner);
+    const wid = ws.id;
+    const ownerId = uid(ws.ownerKey);
+    const members = MEMBERSHIPS[ws.key]; // [userKey, role][]
+    const memberKeys = members.map(([k]) => k);
 
+    // 1) workspace
     wsRows.push({
       id: wid,
       name: ws.name,
-      logoUrl: `https://logo.bento.test/${w}.png`,
-      ownerUserId: owner,
-      createdBy: owner,
+      logoUrl: null,
+      ownerUserId: ownerId,
+      createdBy: ownerId,
     });
 
-    // workspace roles (mirror of authz roles)
+    // 2) workspace_roles — one per role name, references authz roles.id
     for (const role of ROLE_NAMES) {
       wsRoleRows.push({
-        id: detUuid(`wsrole:${w}:${role}`),
+        id: wsRoleRowId(wid, role),
         workspaceId: wid,
-        authzRoleId: authzRoleId(w, role),
+        authzRoleId: wsRoleId(wid, role),
         isSystem: true,
-        createdBy: owner,
+        createdBy: ownerId,
       });
     }
 
-    // members
-    ws.members.forEach((u, n) => {
+    // 3) workspace_members — canonical member rows (everything references these)
+    for (const [userKey, role] of members) {
       memberRows.push({
-        id: wsMemberId(w, u),
+        id: memberRowId(wid, userKey), // workspace_members.id
         workspaceId: wid,
-        userId: userId(u),
-        authzRoleId: authzRoleId(w, roleForIndex(n)),
+        userId: uid(userKey),
+        authzRoleId: wsRoleId(wid, role),
         isActive: true,
       });
-    });
+    }
 
-    // teams + team members
-    TEAM_NAMES.forEach((tname, t) => {
-      const teamId = detUuid(`team:${w}:${t}`);
+    // 4) teams — 2 per workspace
+    TEAMS.forEach((team) => {
+      const teamId = teamRowId(wid, team.key);
       teamRows.push({
         id: teamId,
         workspaceId: wid,
-        name: tname,
-        description: `${tname} team for ${ws.name}.`,
-        icon: '👥',
-        createdBy: owner,
+        name: team.name,
+        description: `${team.name} team for ${ws.name}.`,
+        icon: team.icon,
+        createdBy: ownerId,
       });
-      // ~1/3 of members per team, round-robin
-      ws.members
-        .filter((_, n) => n % TEAM_NAMES.length === t)
-        .forEach((u) => {
+
+      // 5) team_members — ~3 members per team, round-robin over this ws's members.
+      // CRITICAL: workspace_member_id MUST be workspace_members.id (memberRowId),
+      // not a user id. Only members that exist in THIS workspace are used.
+      const teamIdx = TEAMS.findIndex((t) => t.key === team.key);
+      memberKeys
+        .filter((_, n) => n % TEAMS.length === teamIdx)
+        .forEach((userKey) => {
           teamMemberRows.push({
-            id: detUuid(`teammember:${w}:${t}:${u}`),
+            id: detUuid(`teammember:${teamId}:${userKey}`),
             workspaceId: wid,
             teamId,
-            workspaceMemberId: userId(u), // FK -> workspace_members.user_id
+            workspaceMemberId: memberRowId(wid, userKey), // -> workspace_members.id
           });
         });
     });
 
-    // labels
+    // 9) labels — a few per workspace
     LABELS.forEach((lb, l) => {
       labelRows.push({
-        id: detUuid(`label:${w}:${l}`),
+        id: labelRowId(wid, l),
         workspaceId: wid,
         name: lb.name,
         icon: lb.icon,
         type: lb.type,
-        createdBy: owner,
+        createdBy: ownerId,
       });
     });
 
-    // boards
+    // 6) boards — 3 per workspace
     BOARD_NAMES.forEach((bname, b) => {
-      const boardId = detUuid(`board:${w}:${b}`);
+      const boardId = boardRowId(wid, b);
       boardRows.push({
         id: boardId,
         workspaceId: wid,
         name: bname,
         icon: '📋',
         visibility: b === 2 ? 'private' : 'public',
-        createdBy: owner,
+        createdBy: ownerId,
       });
 
-      // columns
+      // 7) board_columns — 4 per board, position 0..3
       const columnIds = COLUMNS.map((cname, c) => {
-        const colId = detUuid(`col:${w}:${b}:${c}`);
+        const colId = colRowId(boardId, c);
         columnRows.push({
           id: colId,
           workspaceId: wid,
           boardId,
           name: cname,
-          position: pos(c + 1),
+          position: pos(c),
         });
         return colId;
       });
 
-      // all workspace members are board members (keeps refs valid)
-      ws.members.forEach((u) => {
+      // 8) board_members — all ws members are members of each board.
+      // workspace_member_id -> workspace_members.id (memberRowId).
+      memberKeys.forEach((userKey) => {
         boardMemberRows.push({
-          id: boardMemberId(w, b, u),
+          id: boardMemberRowId(boardId, userKey), // board_members.id
           workspaceId: wid,
           boardId,
-          workspaceMemberId: wsMemberId(w, u),
+          workspaceMemberId: memberRowId(wid, userKey), // -> workspace_members.id
         });
       });
 
-      // owner favorites the first board
+      // owner favorites the first board (workspace_member_id -> workspace_members.id)
       if (b === 0) {
         favoriteRows.push({
-          id: detUuid(`fav:${w}:${b}:${ws.owner}`),
+          id: detUuid(`fav:${boardId}:${ws.ownerKey}`),
           workspaceId: wid,
           boardId,
-          workspaceMemberId: wsMemberId(w, ws.owner),
+          workspaceMemberId: memberRowId(wid, ws.ownerKey),
         });
       }
 
-      // cards
+      // 10) cards — spread across columns
       for (let k = 0; k < CARDS_PER_BOARD; k++) {
-        const cardId = detUuid(`card:${w}:${b}:${k}`);
         const colId = columnIds[k % columnIds.length];
-        const creator = ws.members[k % ws.members.length];
-        const assignee = ws.members[(k + 1) % ws.members.length];
+        const cardId = cardRowId(colId, k);
+        const creatorKey = memberKeys[k % memberKeys.length];
+        const assigneeKey = memberKeys[(k + 1) % memberKeys.length];
         const title = CARD_TITLES[(b * CARDS_PER_BOARD + k) % CARD_TITLES.length];
         const completed = k % columnIds.length === columnIds.length - 1;
 
@@ -273,101 +288,82 @@ async function seedWorkspace() {
           progress: (completed ? 100 : (k % 10) * 10).toFixed(2),
           isPrivate: false,
           position: pos(k + 1),
-          createdBy: userId(creator),
+          createdBy: uid(creatorKey), // bare user id (no FK)
         });
 
-        // 1 label per card
-        cardLabelRows.push({
-          id: detUuid(`cardlabel:${w}:${b}:${k}`),
-          workspaceId: wid,
-          cardId,
-          labelId: detUuid(`label:${w}:${k % LABELS.length}`),
-        });
-
-        // 1 member assignee per card
-        assigneeRows.push({
-          id: detUuid(`assignee:${w}:${b}:${k}`),
-          workspaceId: wid,
-          cardId,
-          assigneeType: 'member',
-          boardMemberId: boardMemberId(w, b, assignee),
-          assignedBy: userId(creator),
-        });
-
-        // 2 comments per card
-        for (let cm = 0; cm < 2; cm++) {
-          const commenter = ws.members[(k + cm) % ws.members.length];
-          commentRows.push({
-            id: detUuid(`comment:${w}:${b}:${k}:${cm}`),
+        // 12) card_labels — 1-2 labels per card
+        const labelCount = 1 + (k % 2);
+        for (let li = 0; li < labelCount; li++) {
+          const labelIdx = (k + li) % LABELS.length;
+          cardLabelRows.push({
+            id: detUuid(`cardlabel:${cardId}:${labelIdx}`),
             workspaceId: wid,
             cardId,
-            workspaceMemberId: wsMemberId(w, commenter),
-            content: doc(`Comment ${cm + 1} on "${title}".`),
-            contentText: `Comment ${cm + 1} on "${title}".`,
+            labelId: labelRowId(wid, labelIdx),
           });
         }
 
-        // 1 checklist + 3 items per card
-        const checklistId = detUuid(`checklist:${w}:${b}:${k}`);
-        checklistRows.push({
-          id: checklistId,
-          workspaceId: wid,
-          cardId,
-          title: 'Subtasks',
-          position: pos(1),
-          createdBy: userId(creator),
-        });
-        for (let it = 0; it < 3; it++) {
-          checklistItemRows.push({
-            id: detUuid(`clitem:${w}:${b}:${k}:${it}`),
-            workspaceId: wid,
-            checklistId,
-            title: `Step ${it + 1}`,
-            isCompleted: it === 0,
-            position: pos(it + 1),
-            completedBy: it === 0 ? userId(creator) : null,
-            completedAt: it === 0 ? daysFromNow(-1) : null,
-          });
-        }
-
-        // attachment on every 3rd card
+        // 11) card_assignees — assign 1-2 board members per card.
+        // assigneeType 'member' -> board_member_id references board_members.id.
+        const assigneeKeys = [assigneeKey];
         if (k % 3 === 0) {
-          attachmentRows.push({
-            id: detUuid(`attach:${w}:${b}:${k}`),
+          const second = memberKeys[(k + 2) % memberKeys.length];
+          if (second !== assigneeKey) assigneeKeys.push(second);
+        }
+        assigneeKeys.forEach((aKey) => {
+          assigneeRows.push({
+            id: detUuid(`assignee:${cardId}:${aKey}`),
             workspaceId: wid,
             cardId,
-            uploadedBy: userId(creator),
-            fileName: `spec-${k}.pdf`,
-            fileUrl: `https://files.bento.test/${w}/${b}/${k}.pdf`,
-            storageKey: `ws/${w}/board/${b}/card/${k}/spec.pdf`,
-            mimeType: 'application/pdf',
-            size: BigInt(10240 + k * 512),
-          });
-        }
-
-        // mention on first card of each board
-        if (k === 0) {
-          mentionRows.push({
-            id: detUuid(`mention:${w}:${b}`),
-            workspaceId: wid,
-            mentionedUserId: userId(assignee),
-            mentionedBy: userId(creator),
-            cardId,
-          });
-        }
-      }
-
-      // each member watches the first board of their workspace
-      if (b === 0) {
-        ws.members.forEach((u) => {
-          watcherRows.push({
-            id: detUuid(`watch:${w}:${b}:${u}`),
-            workspaceId: wid,
-            workspaceMemberId: wsMemberId(w, u),
-            watchableId: boardId,
-            watchableType: 'board',
+            assigneeType: 'member',
+            boardMemberId: boardMemberRowId(boardId, aKey), // -> board_members.id
+            teamId: null,
+            assignedBy: uid(creatorKey), // bare user id (no FK)
           });
         });
+
+        // 13) card_comments — 1-2 per some cards.
+        // author workspace_member_id -> workspace_members.id (memberRowId).
+        if (k % 2 === 0) {
+          const commentCount = 1 + (k % 2 === 0 ? (k % 4 === 0 ? 1 : 0) : 0);
+          for (let cm = 0; cm < commentCount; cm++) {
+            const commenterKey = memberKeys[(k + cm) % memberKeys.length];
+            commentRows.push({
+              id: detUuid(`comment:${cardId}:${cm}`),
+              workspaceId: wid,
+              cardId,
+              workspaceMemberId: memberRowId(wid, commenterKey), // -> workspace_members.id
+              content: doc(`Comment ${cm + 1} on "${title}".`),
+              contentText: `Comment ${cm + 1} on "${title}".`,
+            });
+          }
+        }
+
+        // 14) card_checklists + items — 1 checklist w/ 3-4 items on some cards.
+        if (k % 2 === 0) {
+          const checklistId = detUuid(`checklist:${cardId}`);
+          checklistRows.push({
+            id: checklistId,
+            workspaceId: wid,
+            cardId,
+            title: 'Subtasks',
+            position: pos(1),
+            createdBy: uid(creatorKey), // bare user id (no FK)
+          });
+          const itemCount = 3 + (k % 2);
+          for (let it = 0; it < itemCount; it++) {
+            checklistItemRows.push({
+              id: detUuid(`clitem:${checklistId}:${it}`),
+              workspaceId: wid,
+              checklistId,
+              title: `Step ${it + 1}`,
+              isCompleted: it === 0,
+              position: pos(it + 1),
+              completedBy: it === 0 ? uid(creatorKey) : null, // bare user id (no FK)
+              completedAt: it === 0 ? daysFromNow(-1) : null,
+            });
+          }
+        }
       }
     });
   }
@@ -389,9 +385,6 @@ async function seedWorkspace() {
   await insertBatch(cardComments, commentRows);
   await insertBatch(cardChecklists, checklistRows);
   await insertBatch(cardChecklistItems, checklistItemRows);
-  await insertBatch(cardAttachments, attachmentRows);
-  await insertBatch(mentions, mentionRows);
-  await insertBatch(watchers, watcherRows);
 
   console.log('✅ Workspace service seeded:');
   console.table({
@@ -403,6 +396,7 @@ async function seedWorkspace() {
     boards: boardRows.length,
     columns: columnRows.length,
     boardMembers: boardMemberRows.length,
+    favorites: favoriteRows.length,
     labels: labelRows.length,
     cards: cardRows.length,
     cardLabels: cardLabelRows.length,
@@ -410,9 +404,6 @@ async function seedWorkspace() {
     comments: commentRows.length,
     checklists: checklistRows.length,
     checklistItems: checklistItemRows.length,
-    attachments: attachmentRows.length,
-    mentions: mentionRows.length,
-    watchers: watcherRows.length,
   });
 }
 
