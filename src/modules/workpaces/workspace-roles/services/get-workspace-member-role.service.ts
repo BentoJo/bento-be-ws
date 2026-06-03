@@ -8,6 +8,7 @@ import type {
   GetWorkspaceMemberRoleResponse,
 } from '../types';
 import { WorkspaceRolesBaseService } from './workspace-roles.base';
+import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 
 @Injectable()
 export class GetWorkspaceMemberRoleService extends WorkspaceRolesBaseService {
@@ -21,7 +22,8 @@ export class GetWorkspaceMemberRoleService extends WorkspaceRolesBaseService {
 
   getWorkspaceMemberRole(
     data: GetWorkspaceMemberRoleRequest,
+    user: GrpcUser,
   ): Promise<GetWorkspaceMemberRoleResponse> {
-    return super.getWorkspaceMemberRole(data);
+    return super.getWorkspaceMemberRole(data, user);
   }
 }
