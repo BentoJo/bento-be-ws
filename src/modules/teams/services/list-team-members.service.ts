@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../../authz/authz.service';
-import { IamService } from '../../../iam/iam.service';
-import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
-import { TeamsFuncs } from '../../../../shared/func/teams';
-import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
-import { validateRequired, validateUUID } from '../../../../shared/validations';
+
 import { ListTeamMembersRequest, ListTeamMembersResponse } from '../types';
+import { TeamsFuncs } from '../../../shared/func/teams';
+import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { AuthzService } from '../../authz/authz.service';
+import { IamService } from '../../iam/iam.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+import { validateRequired, validateUUID } from '../../../shared/validations';
 
 @Injectable()
 export class ListTeamMembersService {

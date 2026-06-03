@@ -1,9 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuthzModule } from '../../authz/authz.module';
-import { IamModule } from '../../iam/iam.module';
-import { WorkspaceFuncs } from '../../../shared/func/workspace';
-import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
-import { TeamsFuncs } from '../../../shared/func/teams';
+
 import { TeamsController } from './teams.controller';
 import { CreateTeamService } from './services/create-team.service';
 import { AddTeamMemberService } from './services/add-team-member.service';
@@ -19,6 +15,11 @@ import { BulkAddTeamMembersService } from './services/bulk-add-team-members.serv
 import { BulkRemoveTeamMembersService } from './services/bulk-remove-team-members.service';
 import { ListMemberTeamsService } from './services/list-member-teams.service';
 import { GetTeamService } from './services/get-team.service';
+import { AuthzModule } from '../authz/authz.module';
+import { WorkspaceFuncs } from '../../shared/func/workspace';
+import { WorkspaceMembersFuncs } from '../../shared/func/workspace-members';
+import { TeamsFuncs } from '../../shared/func/teams';
+import { IamModule } from '../iam/iam.module';
 
 @Module({
   imports: [AuthzModule, IamModule],
