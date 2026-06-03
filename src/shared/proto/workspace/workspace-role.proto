@@ -106,8 +106,6 @@ message CheckPermissionRequest {
   string resourceType = 4;
 
   string action = 5;
-
-  string userId = 6;
 }
 
 message CheckPermissionResponse {

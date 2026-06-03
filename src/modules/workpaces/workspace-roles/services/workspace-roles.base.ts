@@ -224,13 +224,14 @@ export abstract class WorkspaceRolesBaseService {
 
   protected async getWorkspaceMemberRole(
     data: GetWorkspaceMemberRoleRequest,
+    user: GrpcUser,
   ): Promise<GetWorkspaceMemberRoleResponse> {
     this.validateMemberRequest(data);
     await this.requireWorkspace(data.workspaceId);
 
     const member = await this.workspaceMembersFuncs.getWorkspaceMember(
       data.workspaceId,
-      data.userId,
+      user.id,
     );
 
     if (!member || !member.isActive) {
@@ -247,13 +248,14 @@ export abstract class WorkspaceRolesBaseService {
 
   protected async checkPermission(
     data: CheckPermissionRequest,
+    user: GrpcUser,
   ): Promise<CheckPermissionResponse> {
-    this.validatePermissionRequest(data);
+    this.validatePermissionRequest(data, user);
     await this.requireWorkspace(data.workspaceId);
 
     const member = await this.workspaceMembersFuncs.getWorkspaceMember(
       data.workspaceId,
-      data.userId,
+      user.id,
     );
 
     if (!member || !member.isActive) {
@@ -288,7 +290,7 @@ export abstract class WorkspaceRolesBaseService {
     await this.requirePermission(
       requesterMember.authzRoleId,
       data.workspaceId,
-      'workspace:roles:read',
+      'workspace:roles:manage',
     );
 
     const roles = await db
@@ -465,27 +467,17 @@ export abstract class WorkspaceRolesBaseService {
     }
   }
 
-  protected validateMemberRequest(data: GetWorkspaceMemberRoleRequest) {
+  protected validateMemberRequest(
+    data: GetWorkspaceMemberRoleRequest,
+    // user: GrpcUser,
+  ) {
     this.validateWorkspaceRequest(data);
-
-    const userResult = validateRequired(data.userId, 'User ID');
-    if (!userResult.valid) {
-      throw new RpcException({
-        code: GrpcStatus.INVALID_ARGUMENT,
-        message: userResult.message,
-      });
-    }
-
-    const userIdResult = validateUUID(data.userId, 'User ID');
-    if (!userIdResult.valid) {
-      throw new RpcException({
-        code: GrpcStatus.INVALID_ARGUMENT,
-        message: userIdResult.message,
-      });
-    }
   }
 
-  protected validatePermissionRequest(data: CheckPermissionRequest) {
+  protected validatePermissionRequest(
+    data: CheckPermissionRequest,
+    user: GrpcUser,
+  ) {
     this.validateWorkspaceRequest(data);
 
     const scopeTypeResult = validateRequired(data.scopeType, 'Scope Type');
@@ -523,7 +515,7 @@ export abstract class WorkspaceRolesBaseService {
       });
     }
 
-    const userResult = validateRequired(data.userId, 'User ID');
+    const userResult = validateRequired(user?.id, 'User ID');
     if (!userResult.valid) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,
@@ -531,7 +523,7 @@ export abstract class WorkspaceRolesBaseService {
       });
     }
 
-    const userIdResult = validateUUID(data.userId, 'User ID');
+    const userIdResult = validateUUID(user?.id, 'User ID');
     if (!userIdResult.valid) {
       throw new RpcException({
         code: GrpcStatus.INVALID_ARGUMENT,

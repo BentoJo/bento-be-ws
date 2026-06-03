@@ -64,15 +64,20 @@ export class WorkspaceRolesController {
   @GrpcMethod('WorkspaceRoleService', 'GetWorkspaceMemberRole')
   getWorkspaceMemberRole(
     @Payload() data: GetWorkspaceMemberRoleRequest,
+    @GrpcUser() user: GrpcUser,
   ): Promise<GetWorkspaceMemberRoleResponse> {
-    return this.getWorkspaceMemberRoleService.getWorkspaceMemberRole(data);
+    return this.getWorkspaceMemberRoleService.getWorkspaceMemberRole(
+      data,
+      user,
+    );
   }
 
   @GrpcMethod('WorkspaceRoleService', 'CheckPermission')
   checkPermission(
     @Payload() data: CheckPermissionRequest,
+    @GrpcUser() user: GrpcUser,
   ): Promise<CheckPermissionResponse> {
-    return this.checkPermissionService.checkPermission(data);
+    return this.checkPermissionService.checkPermission(data, user);
   }
 
   @GrpcMethod('WorkspaceRoleService', 'GetWorkspaceRoles')

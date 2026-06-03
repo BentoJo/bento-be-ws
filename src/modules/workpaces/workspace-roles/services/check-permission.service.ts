@@ -5,6 +5,7 @@ import { WorkspaceFuncs } from '../../../../shared/func/workspace';
 import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
 import type { CheckPermissionRequest, CheckPermissionResponse } from '../types';
 import { WorkspaceRolesBaseService } from './workspace-roles.base';
+import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 
 @Injectable()
 export class CheckPermissionService extends WorkspaceRolesBaseService {
@@ -18,7 +19,8 @@ export class CheckPermissionService extends WorkspaceRolesBaseService {
 
   checkPermission(
     data: CheckPermissionRequest,
+    user: GrpcUser,
   ): Promise<CheckPermissionResponse> {
-    return super.checkPermission(data);
+    return super.checkPermission(data, user);
   }
 }
