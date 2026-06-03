@@ -30,6 +30,6 @@ export interface GetUserByIdResponse {
 }
 
 export interface UserServiceClient {
-  getUsersByIds(req: GetUsersByIdsRequest): Observable<GetUsersByIdsResponse>;
-  getUserById(req: GetUserByIdRequest): Observable<GetUserByIdResponse>;
+  GetUsersByIds(req: GetUsersByIdsRequest): Observable<GetUsersByIdsResponse>;
+  GetUser(req: GetUserByIdRequest): Observable<GetUserByIdResponse>;
 }

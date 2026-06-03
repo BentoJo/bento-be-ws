@@ -30,10 +30,10 @@ export class IamService implements OnModuleInit {
   }
 
   getUsersByIds(req: GetUsersByIdsRequest): Observable<GetUsersByIdsResponse> {
-    return this.service.getUsersByIds(req);
+    return this.service.GetUsersByIds(req);
   }
 
   getUserById(req: GetUserByIdRequest): Observable<GetUserByIdResponse> {
-    return this.service.getUserById(req);
+    return this.service.GetUser(req);
   }
 }

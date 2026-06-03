@@ -6,8 +6,8 @@ import "auth.proto";
 service UserService {
     rpc updateUserProfile (UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
     rpc deleteUserProfile (DeleteUserProfileRequest) returns (DeleteUserProfileResponse);
-    rpc getUsersByIds (GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
-    rpc getUserById (GetUserByIdRequest) returns (GetUserByIdResponse);
+    rpc GetUsersByIds (GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
+    rpc GetUser (GetUserByIdRequest) returns (GetUserByIdResponse);
 }
 
 message UpdateUserProfileRequest {
