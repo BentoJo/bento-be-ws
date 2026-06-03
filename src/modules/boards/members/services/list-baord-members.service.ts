@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { and, desc, eq, or, sql } from 'drizzle-orm';
+import { firstValueFrom } from 'rxjs';
 
 import db from '../../../../shared/configs/db.config';
 import { BoardFuncs } from '../../../../shared/func/board';
@@ -9,28 +10,11 @@ import { WorkspaceFuncs } from '../../../../shared/func/workspace';
 import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
 import { validateRequired, validateUUID } from '../../../../shared/validations';
 import { boardMembers, workspaceMembers } from '../../../../shared/db/schema';
-
-type ListBoardMembersRequest = {
-  workspaceId: string;
-  boardId: string;
-  page?: number;
-  limit?: number;
-  search?: string;
-};
-
-type ListBoardMembersResponse = {
-  members: Array<{
-    userId: string;
-    overrideRoleId?: string | null;
-    joinedAt: string;
-  }>;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-};
+import { IamService } from '../../../iam/iam.service';
+import type {
+  ListBoardMembersRequest,
+  ListBoardMembersResponse,
+} from '../types';
 
 @Injectable()
 export class ListBoardMembersService {
@@ -38,6 +22,7 @@ export class ListBoardMembersService {
     private readonly workspaceFuncs: WorkspaceFuncs,
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
+    private readonly iam: IamService,
   ) {}
 
   async listBoardMembers(
@@ -116,6 +101,17 @@ export class ListBoardMembersService {
       .limit(limit)
       .offset(offset);
 
+    const userIds = Array.from(
+      new Set(rows.map((row) => row.userId).filter((id) => !!id)),
+    );
+
+    const iamUsers =
+      userIds.length > 0
+        ? await firstValueFrom(this.iam.getUsersByIds({ userIds }))
+        : { users: [] };
+
+    const usersById = new Map((iamUsers.users ?? []).map((u) => [u.id, u]));
+
     return {
       members: rows.map((row) => ({
         userId: row.userId,
@@ -123,6 +119,15 @@ export class ListBoardMembersService {
         joinedAt: row.joinedAt
           ? row.joinedAt.toISOString()
           : new Date().toISOString(),
+        user: usersById.get(row.userId)
+          ? {
+              id: usersById.get(row.userId)!.id,
+              email: usersById.get(row.userId)!.email,
+              firstName: usersById.get(row.userId)!.firstName,
+              lastName: usersById.get(row.userId)!.lastName,
+              avatarUrl: usersById.get(row.userId)!.avatarUrl || null,
+            }
+          : undefined,
       })),
       pagination: {
         page,

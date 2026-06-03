@@ -33,6 +33,14 @@ export interface ListBoardMembersRequest {
 export interface BoardMemberListItem {
   userId: string;
 
+  user?: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string | null;
+  };
+
   overrideRoleId?: string | null;
 
   joinedAt: string;

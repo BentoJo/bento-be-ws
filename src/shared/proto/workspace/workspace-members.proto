@@ -165,10 +165,24 @@ message ListWorkspaceMembersRequest {
   optional string search = 4;
 }
 
+message UserSummary {
+  string id = 1;
+
+  string email = 2;
+
+  string firstName = 3;
+
+  string lastName = 4;
+
+  optional string avatarUrl = 5;
+}
+
 message WorkspaceMemberListItem {
   string id = 1;
 
   string userId = 2;
+
+  optional UserSummary user = 5;
 
   string authzRoleId = 3;
 

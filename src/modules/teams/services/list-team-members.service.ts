@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import { RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthzService } from '../../authz/authz.service';
-import { GrpcUser } from '../../../shared/decorators/meta.decorator';
+
+import { ListTeamMembersRequest, ListTeamMembersResponse } from '../types';
 import { TeamsFuncs } from '../../../shared/func/teams';
 import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
+import { AuthzService } from '../../authz/authz.service';
+import { IamService } from '../../iam/iam.service';
+import { GrpcUser } from '../../../shared/decorators/meta.decorator';
 import { validateRequired, validateUUID } from '../../../shared/validations';
-import { ListTeamMembersRequest, ListTeamMembersResponse } from '../types';
 
 @Injectable()
 export class ListTeamMembersService {
@@ -15,6 +17,7 @@ export class ListTeamMembersService {
     private readonly teamsFuncs: TeamsFuncs,
     private readonly workspaceMembersFuncs: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
+    private readonly iam: IamService,
   ) {}
 
   async listTeamMembers(
@@ -90,15 +93,41 @@ export class ListTeamMembersService {
 
     const memberMap = new Map(workspaceMembers.map((m) => [m.userId, m]));
 
+    const userIds = Array.from(
+      new Set(
+        members
+          .map((m) => memberMap.get(m.workspaceMemberId)?.userId)
+          .filter((id): id is string => !!id),
+      ),
+    );
+
+    const iamUsers =
+      userIds.length > 0
+        ? await firstValueFrom(this.iam.getUsersByIds({ userIds }))
+        : { users: [] };
+
+    const usersById = new Map((iamUsers.users ?? []).map((u) => [u.id, u]));
+
     const enrichedMembers = members
       .filter((m) => memberMap.has(m.workspaceMemberId))
       .map((m) => {
         const wm = memberMap.get(m.workspaceMemberId)!;
+        const userInfo = usersById.get(wm.userId);
+
         return {
           workspaceMemberId: m.workspaceMemberId,
           teamMemberId: m.id,
           userId: wm.userId,
           joinedAt: m.joinedAt?.toISOString() || new Date().toISOString(),
+          user: userInfo
+            ? {
+                id: userInfo.id,
+                email: userInfo.email,
+                firstName: userInfo.firstName,
+                lastName: userInfo.lastName,
+                avatarUrl: userInfo.avatarUrl || null,
+              }
+            : undefined,
         };
       });
 

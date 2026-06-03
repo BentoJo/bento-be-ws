@@ -8,6 +8,7 @@ import db from '../../../../shared/configs/db.config';
 import { WorkspaceFuncs } from '../../../../shared/func/workspace';
 import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
 import { AuthzService } from '../../../authz/authz.service';
+import { IamService } from '../../../iam/iam.service';
 import { validateUUID } from '../../../../shared/validations';
 import type { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 import type {
@@ -23,6 +24,7 @@ export class ListWorkspaceMembersService {
     private readonly workspaceFuncs: WorkspaceFuncs,
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
+    private readonly iam: IamService,
   ) {}
 
   async listWorkspaceMembers(
@@ -133,11 +135,31 @@ export class ListWorkspaceMembersService {
 
     const rows = await q;
 
+    const userIds = Array.from(
+      new Set(rows.map((m) => m.userId).filter((id) => !!id)),
+    );
+
+    const iamUsers =
+      userIds.length > 0
+        ? await firstValueFrom(this.iam.getUsersByIds({ userIds }))
+        : { users: [] };
+
+    const usersById = new Map((iamUsers.users ?? []).map((u) => [u.id, u]));
+
     const members: WorkspaceMemberListItem[] = rows.map((m) => ({
       id: m.id,
       userId: m.userId,
       authzRoleId: m.authzRoleId,
       joinedAt: (m.joinedAt as Date).toISOString(),
+      user: usersById.get(m.userId)
+        ? {
+            id: usersById.get(m.userId)!.id,
+            email: usersById.get(m.userId)!.email,
+            firstName: usersById.get(m.userId)!.firstName,
+            lastName: usersById.get(m.userId)!.lastName,
+            avatarUrl: usersById.get(m.userId)!.avatarUrl || null,
+          }
+        : undefined,
     }));
 
     const totalPages = limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1;

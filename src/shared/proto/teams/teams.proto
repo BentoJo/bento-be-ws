@@ -235,10 +235,24 @@ message ListTeamMembersRequest {
   optional string search = 5;
 }
 
+message UserSummary {
+  string id = 1;
+
+  string email = 2;
+
+  string firstName = 3;
+
+  string lastName = 4;
+
+  optional string avatarUrl = 5;
+}
+
 message TeamMemberListItem {
   string userId = 1;
 
   string joinedAt = 2;
+
+  optional UserSummary user = 3;
 }
 
 message ListTeamMembersResponse {

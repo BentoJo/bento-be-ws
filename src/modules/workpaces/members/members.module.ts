@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthzModule } from '../../authz/authz.module';
+import { IamModule } from '../../iam/iam.module';
 import { HealthService } from './services/health.service';
 import { WorkspaceFuncs } from '../../../shared/func/workspace';
 import { MembersController } from './members.controller';
@@ -16,7 +17,7 @@ import { GetWorkspaceMemberRoleService } from './services/get-workspace-member-r
 import { ValidateWorkspaceMembershipService } from './services/validate-workspace-membership.service';
 
 @Module({
-  imports: [AuthzModule],
+  imports: [AuthzModule, IamModule],
   controllers: [MembersController],
   providers: [
     WorkspaceFuncs,

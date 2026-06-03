@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthzModule } from '../../authz/authz.module';
+import { IamModule } from '../../iam/iam.module';
 import { BoardFuncs } from '../../../shared/func/board';
 import { WorkspaceFuncs } from '../../../shared/func/workspace';
 import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
@@ -10,7 +11,7 @@ import { ListBoardMembersService } from './services/list-baord-members.service';
 import { RemoveBoardMemberService } from './services/remove-board-member.service';
 
 @Module({
-  imports: [AuthzModule],
+  imports: [AuthzModule, IamModule],
   controllers: [MembersController],
   providers: [
     WorkspaceFuncs,

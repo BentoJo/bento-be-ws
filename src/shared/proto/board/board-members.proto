@@ -83,12 +83,26 @@ message ListBoardMembersRequest {
   optional string search = 5;
 }
 
+message UserSummary {
+  string id = 1;
+
+  string email = 2;
+
+  string firstName = 3;
+
+  string lastName = 4;
+
+  optional string avatarUrl = 5;
+}
+
 message BoardMemberListItem {
   string userId = 1;
 
   optional string overrideRoleId = 2;
 
   string joinedAt = 3;
+
+  optional UserSummary user = 4;
 }
 
 message ListBoardMembersResponse {
