@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # LOGIN TO GHCR (machine user)
+      # LOGIN TO GHCR (machine user) 
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
