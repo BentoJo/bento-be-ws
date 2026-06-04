@@ -37,6 +37,7 @@ export class AddTeamMemberService {
       data.workspaceId,
       user.id,
     );
+
     if (!actor || !actor.isActive) {
       throw new RpcException({
         code: GrpcStatus.PERMISSION_DENIED,

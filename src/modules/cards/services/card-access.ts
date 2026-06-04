@@ -25,9 +25,7 @@ export async function resolveBoardContext(
   },
 ): Promise<{
   board: BoardRow;
-  member: Awaited<
-    ReturnType<WorkspaceMembersFuncs['getWorkspaceMember']>
-  >;
+  member: Awaited<ReturnType<WorkspaceMembersFuncs['getWorkspaceMember']>>;
   isBoardMember: boolean;
 }> {
   if (!user?.id) {
@@ -90,11 +88,7 @@ export function assertCardInBoard(
   workspaceId: string,
   boardId: string,
 ): asserts card is CardRow {
-  if (
-    !card ||
-    card.workspaceId !== workspaceId ||
-    card.boardId !== boardId
-  ) {
+  if (!card || card.workspaceId !== workspaceId || card.boardId !== boardId) {
     throw new RpcException({
       code: GrpcStatus.NOT_FOUND,
       message: 'Card not found',

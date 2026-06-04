@@ -17,6 +17,8 @@ import type {
   RemoveCardAssigneeRequest,
 } from '../types';
 import { assertCardInBoard, resolveBoardContext } from './card-access';
+import { AuthzService } from '../../authz/authz.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AssigneesCardService {
@@ -25,6 +27,7 @@ export class AssigneesCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authZ: AuthzService,
   ) {}
 
   async addCardAssignee(
@@ -72,7 +75,7 @@ export class AssigneesCardService {
       });
     }
 
-    await resolveBoardContext(data, user, {
+    const result = await resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
@@ -80,6 +83,21 @@ export class AssigneesCardService {
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
     assertCardInBoard(card, data.workspaceId, data.boardId);
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card_assignees:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     await this.cardFuncs.addAssignee({
       workspaceId: data.workspaceId,
@@ -113,11 +131,26 @@ export class AssigneesCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    const result = await resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card_assignees:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
     assertCardInBoard(card, data.workspaceId, data.boardId);
@@ -146,11 +179,26 @@ export class AssigneesCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    const result = await resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card_assignees:read',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
     assertCardInBoard(card, data.workspaceId, data.boardId);
