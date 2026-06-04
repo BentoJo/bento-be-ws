@@ -84,12 +84,11 @@ export class AssigneesCardService {
     const card = await this.cardFuncs.getActiveCard(data.cardId);
     assertCardInBoard(card, data.workspaceId, data.boardId);
 
-    //not card:manage
     const perm = await firstValueFrom(
       this.authZ.checkPermission({
         roleId: result.member.authzRoleId,
         scopeId: data.workspaceId,
-        permission: 'workspace:cards:manage',
+        permission: 'workspace:card_assignees:manage',
       }),
     );
 
@@ -132,11 +131,26 @@ export class AssigneesCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    const result = await resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card_assignees:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
     assertCardInBoard(card, data.workspaceId, data.boardId);
@@ -165,11 +179,26 @@ export class AssigneesCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    const result = await resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card_assignees:read',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
     assertCardInBoard(card, data.workspaceId, data.boardId);
