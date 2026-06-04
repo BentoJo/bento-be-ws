@@ -1,8 +1,6 @@
 import type { cards, labels, cardAssignees } from '../../shared/db/schema';
 
-export type CardPriority = NonNullable<
-  (typeof cards.$inferSelect)['priority']
->;
+export type CardPriority = NonNullable<(typeof cards.$inferSelect)['priority']>;
 
 export type LabelType = NonNullable<(typeof labels.$inferSelect)['type']>;
 

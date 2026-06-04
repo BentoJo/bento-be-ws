@@ -153,8 +153,6 @@ export class ColumnFuncs {
     data: { boardId: string; columnId: string; newPosition: number },
     tx?: DB,
   ): Promise<void> {
-    const client = tx || db;
-
     const run = async (trx: DB) => {
       const siblings = (await trx
         .select()
@@ -284,10 +282,7 @@ export class ColumnFuncs {
         .select({ max: sql<string | null>`MAX(${cards.position})` })
         .from(cards)
         .where(
-          and(
-            eq(cards.columnId, data.targetColumnId),
-            isNull(cards.deletedAt),
-          ),
+          and(eq(cards.columnId, data.targetColumnId), isNull(cards.deletedAt)),
         );
 
       let nextPosition = maxRow?.max != null ? Number(maxRow.max) : 0;

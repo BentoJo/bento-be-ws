@@ -72,9 +72,7 @@ export class GetColumnService {
       createdAt: column.createdAt
         ? column.createdAt.toISOString()
         : new Date().toISOString(),
-      updatedAt: column.updatedAt
-        ? column.updatedAt.toISOString()
-        : undefined,
+      updatedAt: column.updatedAt ? column.updatedAt.toISOString() : undefined,
     };
   }
 

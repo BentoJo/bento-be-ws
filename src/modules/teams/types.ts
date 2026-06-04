@@ -47,7 +47,13 @@ export interface TeamMemberResponse {
 
   teamId: string;
 
-  workspaceMemberId: string;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string | null;
+  };
 
   joinedAt: string;
 }
@@ -183,9 +189,7 @@ export interface TeamMemberDetail {
 
   teamMemberId: string;
 
-  userId: string;
-
-  user?: {
+  user: {
     id: string;
     email: string;
     firstName: string;

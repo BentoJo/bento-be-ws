@@ -194,7 +194,7 @@ message AddTeamMemberResponse {
 
   string teamId = 2;
 
-  string workspaceMemberId = 3;
+  TeamMemberListItem user = 3;
 
   string joinedAt = 4;
 }
@@ -248,7 +248,7 @@ message UserSummary {
 }
 
 message TeamMemberListItem {
-  string userId = 1;
+  string id = 1;
 
   string joinedAt = 2;
 

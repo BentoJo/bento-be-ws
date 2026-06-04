@@ -11,6 +11,7 @@ import { TeamsFuncs } from '../../../shared/func/teams';
 import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
 import { validateRequired, validateUUID } from '../../../shared/validations';
 import type { AddTeamMemberRequest, TeamMemberResponse } from '../types';
+import { IamService } from '../../iam/iam.service';
 
 @Injectable()
 export class AddTeamMemberService {
@@ -18,6 +19,7 @@ export class AddTeamMemberService {
     private readonly teamsFuncs: TeamsFuncs,
     private readonly workspaceMembersFuncs: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
+    private readonly iam: IamService,
   ) {}
 
   async addTeamMember(
@@ -116,10 +118,27 @@ export class AddTeamMemberService {
       });
     }
 
+    const userInfo = await firstValueFrom(
+      this.iam.getUserById({ userId: data.workspaceMemberId }),
+    );
+
+    if (!userInfo?.user) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Failed to retrieve user info',
+      });
+    }
+
     return {
       id: created.id,
       teamId: created.teamId,
-      workspaceMemberId: created.workspaceMemberId,
+      user: {
+        id: userInfo.user?.id,
+        email: userInfo.user?.email,
+        firstName: userInfo.user?.firstName,
+        lastName: userInfo.user?.lastName,
+        avatarUrl: userInfo.user?.avatarUrl,
+      }, // : created.workspaceMemberId,
       joinedAt: (created.joinedAt ?? new Date()).toISOString(),
     };
   }

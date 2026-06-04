@@ -65,7 +65,7 @@ export class CreateColumnService {
       this.authZ.checkPermission({
         roleId: member.authzRoleId,
         scopeId: data.workspaceId,
-        permission: 'workspace:boards:manage',
+        permission: 'workspace:columns:manage',
       }),
     );
 
@@ -110,9 +110,7 @@ export class CreateColumnService {
       createdAt: column.createdAt
         ? column.createdAt.toISOString()
         : new Date().toISOString(),
-      updatedAt: column.updatedAt
-        ? column.updatedAt.toISOString()
-        : undefined,
+      updatedAt: column.updatedAt ? column.updatedAt.toISOString() : undefined,
     };
   }
 

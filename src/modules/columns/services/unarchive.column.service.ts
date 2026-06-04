@@ -62,7 +62,7 @@ export class UnarchiveColumnService {
       this.authZ.checkPermission({
         roleId: member.authzRoleId,
         scopeId: data.workspaceId,
-        permission: 'workspace:boards:manage',
+        permission: 'workspace:columns:manage',
       }),
     );
 

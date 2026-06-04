@@ -31,9 +31,7 @@ export interface ListBoardMembersRequest {
 }
 
 export interface BoardMemberListItem {
-  userId: string;
-
-  user?: {
+  user: {
     id: string;
     email: string;
     firstName: string;

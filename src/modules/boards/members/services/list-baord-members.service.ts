@@ -114,20 +114,17 @@ export class ListBoardMembersService {
 
     return {
       members: rows.map((row) => ({
-        userId: row.userId,
         overrideRoleId: row.overrideRoleId ?? null,
         joinedAt: row.joinedAt
           ? row.joinedAt.toISOString()
           : new Date().toISOString(),
-        user: usersById.get(row.userId)
-          ? {
-              id: usersById.get(row.userId)!.id,
-              email: usersById.get(row.userId)!.email,
-              firstName: usersById.get(row.userId)!.firstName,
-              lastName: usersById.get(row.userId)!.lastName,
-              avatarUrl: usersById.get(row.userId)!.avatarUrl || null,
-            }
-          : undefined,
+        user: {
+          id: usersById.get(row.userId)!.id,
+          email: usersById.get(row.userId)!.email,
+          firstName: usersById.get(row.userId)!.firstName,
+          lastName: usersById.get(row.userId)!.lastName,
+          avatarUrl: usersById.get(row.userId)!.avatarUrl || null,
+        },
       })),
       pagination: {
         page,
