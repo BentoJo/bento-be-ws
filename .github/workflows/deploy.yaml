@@ -14,6 +14,10 @@ jobs:
       packages: write
 
     steps:
+      - name: Test SSH Port
+        run: |
+          timeout 10 bash -c "</dev/tcp/${{ secrets.VPS_HOST }}/22"
+
       - uses: actions/checkout@v4
 
       # LOGIN TO GHCR (machine user) 
@@ -35,8 +39,14 @@ jobs:
             ghcr.io/bentojo/bento-be-workspace-ws-service:${{ github.sha }}
 
         # DEPLOY
-      - name: Debug VPS Info
-        run: |
-          echo "Host exists: ${{ secrets.VPS_HOST != '' }}"
-          echo "User exists: ${{ secrets.VPS_USER != '' }}"
-          echo "Key exists: ${{ secrets.VPS_SSH_KEY != '' }}"
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /apps/bento-be-ws
+
+            docker compose pull
+            docker compose up -d
