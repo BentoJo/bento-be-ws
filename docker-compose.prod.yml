@@ -1,0 +1,64 @@
+# Reference compose for deploying bento-be-ws (gRPC, port 50054) on the VPS
+# (/apps/bento-be-ws).
+#
+# The image is built + pushed to GHCR by .github/workflows/deploy.yaml.
+# On the VPS you only PULL + run it (no source there) — do NOT add `build:`.
+#
+# Runtime config/secrets are read from process.env at RUNTIME and come from a
+# `.env` file NEXT TO this compose on the VPS (chmod 600). docker compose
+# auto-loads it for both `env_file` and ${...} interpolation. Required keys:
+#
+#   # /apps/bento-be-ws/.env
+#   GRPC_PORT=50054
+#   DATABASE_URL=postgresql://ws_service:...@ws-db:5432/ws
+#   POSTGRES_USER=ws_service
+#   POSTGRES_PASSWORD=...
+#   POSTGRES_DB=ws
+#   REDIS_HOST=<cloud redis host>       # the managed/cloud redis (NOT a local one)
+#   REDIS_PORT=<cloud redis port>
+#   REDIS_PASS=<cloud redis password>
+#   AWS_ACCESS_KEY=... / AWS_SECRET_KEY=... / FROM_EMAIL_AWS=...
+#
+# This service is gRPC-only (no HTTP), so there is no HTTP healthcheck.
+#
+# Drizzle migrations + seed are run MANUALLY (one-off, not on every deploy), e.g.:
+#   docker compose -f docker-compose.prod.yml run --rm ws-service npx drizzle-kit migrate
+#   docker compose -f docker-compose.prod.yml run --rm ws-service npm run seed
+# (drizzle-kit/tsx are devDependencies and are NOT in the runtime image; run these
+#  from a build/tooling context or a one-off container that has them.)
+
+services:
+  ws-db:
+    image: postgres:18
+    container_name: ws-db
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - backend-network
+
+  ws-service:
+    image: ghcr.io/bentojo/bento-be-ws:latest
+    container_name: ws-service
+    restart: always
+    depends_on:
+      - ws-db
+    ports:
+      - '50054:50054'
+    # env_file supplies DATABASE_URL + the CLOUD redis vars (REDIS_HOST/PORT/PASS).
+    # The local-redis docker-compose.override.yml is dev-only and is NOT used here.
+    env_file:
+      - .env
+    networks:
+      - backend-network
+
+volumes:
+  postgres_data:
+
+networks:
+  backend-network:
+    external: true

@@ -43,6 +43,9 @@ lerna-debug.log*
 .env.local
 .env.production
 
+# Local-only dev override (local redis) — not for prod/VPS
+docker-compose.override.yml
+
 # temp directory
 .temp
 .tmp

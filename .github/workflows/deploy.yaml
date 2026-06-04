@@ -1,9 +1,15 @@
-name: Deploy Gateway Service
+name: Deploy WS Service
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch: {}
+
+# Don't let two deploys race; cancel an in-progress one when a newer push lands.
+concurrency:
+  group: deploy-ws-service
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -14,13 +20,13 @@ jobs:
       packages: write
 
     steps:
-      - name: Test SSH Port
-        run: |
-          timeout 10 bash -c "</dev/tcp/${{ secrets.VPS_HOST }}/22"
-
       - uses: actions/checkout@v4
 
-      # LOGIN TO GHCR (machine user) 
+      # Buildx enables GitHub Actions layer caching for fast rebuilds.
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # LOGIN TO GHCR (machine user) — for pushing the image.
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -28,25 +34,39 @@ jobs:
           username: ${{ secrets.CI_BOT_USERNAME }}
           password: ${{ secrets.CI_BOT_TOKEN }}
 
-      # BUILD & PUSH
-      - name: Build & Push
+      # BUILD & PUSH WS-SERVICE IMAGE (gRPC NestJS — no build-args needed; all
+      # secrets/config are read from process.env at RUNTIME via compose env_file).
+      - name: Build & Push WS Service
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/bentojo/bento-be-workspace-ws-service:latest
-            ghcr.io/bentojo/bento-be-workspace-ws-service:${{ github.sha }}
+            ghcr.io/bentojo/bento-be-ws:latest
+            ghcr.io/bentojo/bento-be-ws:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-        # DEPLOY
-      - name: Deploy
+      # DEPLOY TO VPS — log in to GHCR there too (private package), then pull +
+      # recreate. Fails the job if the container isn't running afterwards.
+      - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: GHCR_USER,GHCR_TOKEN
           script: |
+            set -e
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             cd /apps/bento-be-ws
-
-            docker compose pull
-            docker compose up -d
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            docker image prune -f
+            # quick sanity check: container is running
+            sleep 3
+            docker compose -f docker-compose.prod.yml ps
+            test "$(docker inspect -f '{{.State.Running}}' ws-service)" = "true"
+        env:
+          GHCR_USER: ${{ secrets.CI_BOT_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
