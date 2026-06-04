@@ -109,27 +109,30 @@ export class ListTeamMembersService {
     const usersById = new Map((iamUsers.users ?? []).map((u) => [u.id, u]));
 
     const enrichedMembers = members
-      .filter((m) => memberMap.has(m.workspaceMemberId))
       .map((m) => {
-        const wm = memberMap.get(m.workspaceMemberId)!;
-        const userInfo = usersById.get(wm.userId);
+        const wm = memberMap.get(m.workspaceMemberId);
+        const userInfo = wm ? usersById.get(wm.userId) : undefined;
+
+        if (!wm || !userInfo) {
+          return null;
+        }
 
         return {
           workspaceMemberId: m.workspaceMemberId,
           teamMemberId: m.id,
-          userId: wm.userId,
           joinedAt: m.joinedAt?.toISOString() || new Date().toISOString(),
-          user: userInfo
-            ? {
-                id: userInfo.id,
-                email: userInfo.email,
-                firstName: userInfo.firstName,
-                lastName: userInfo.lastName,
-                avatarUrl: userInfo.avatarUrl || null,
-              }
-            : undefined,
+          user: {
+            id: userInfo.id,
+            email: userInfo.email,
+            firstName: userInfo.firstName,
+            lastName: userInfo.lastName,
+            avatarUrl: userInfo.avatarUrl || null,
+          },
         };
-      });
+      })
+      .filter(
+        (member): member is NonNullable<typeof member> => member !== null,
+      );
 
     const totalPages = Math.ceil(total / limit);
 
