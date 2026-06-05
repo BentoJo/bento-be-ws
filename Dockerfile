@@ -45,7 +45,12 @@ COPY --from=builder --chown=nodejs:nodejs /app/drizzle.config.ts ./drizzle.confi
 
 # raw proto sources too, mirrored at /app/src/shared/proto, as a belt-and-braces
 # fallback so the 8 protos exist under BOTH dist/src/... and src/... layouts.
-COPY --from=builder --chown=nodejs:nodejs /app/src/shared/proto ./src/shared/proto
+# COPY --from=builder --chown=nodejs:nodejs /app/src/shared/proto ./src/shared/proto
+
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+
+
+COPY --from=builder --chown=nodejs:nodejs /app/src ./src
 
 USER nodejs
 

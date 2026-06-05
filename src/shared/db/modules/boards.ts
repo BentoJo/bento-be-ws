@@ -14,7 +14,7 @@ import { boardVisibilityEnum } from '../enums';
 export const boards = pgTable(
   'boards',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -33,7 +33,7 @@ export const boards = pgTable(
 export const boardFavorites = pgTable(
   'board_favorites',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -60,7 +60,7 @@ export const boardFavorites = pgTable(
 export const boardMembers = pgTable(
   'board_members',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -87,7 +87,7 @@ export const boardMembers = pgTable(
 export const boardColumns = pgTable(
   'board_columns',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),

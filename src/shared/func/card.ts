@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { and, asc, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
@@ -81,7 +80,6 @@ export class CardFuncs {
     const [row] = await client
       .insert(cards)
       .values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         boardId: data.boardId,
         columnId: data.columnId,
@@ -227,7 +225,6 @@ export class CardFuncs {
     const [row] = await client
       .insert(cardAssignees)
       .values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         cardId: data.cardId,
         assigneeType: data.assigneeType,
@@ -253,10 +250,7 @@ export class CardFuncs {
       );
   }
 
-  async listAssignees(
-    cardId: string,
-    tx?: DB,
-  ): Promise<CardAssigneeRow[]> {
+  async listAssignees(cardId: string, tx?: DB): Promise<CardAssigneeRow[]> {
     const client = tx || db;
     return client
       .select()
@@ -283,7 +277,6 @@ export class CardFuncs {
     const [row] = await client
       .insert(labels)
       .values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         name: data.name,
         icon: data.icon ?? null,
@@ -306,10 +299,7 @@ export class CardFuncs {
     return row;
   }
 
-  async listWorkspaceLabels(
-    workspaceId: string,
-    tx?: DB,
-  ): Promise<LabelRow[]> {
+  async listWorkspaceLabels(workspaceId: string, tx?: DB): Promise<LabelRow[]> {
     const client = tx || db;
     return client
       .select()
@@ -332,7 +322,6 @@ export class CardFuncs {
     await client
       .insert(cardLabels)
       .values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         cardId: data.cardId,
         labelId: data.labelId,
@@ -373,7 +362,6 @@ export class CardFuncs {
     const [row] = await client
       .insert(cardComments)
       .values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         cardId: data.cardId,
         workspaceMemberId: data.workspaceMemberId,
@@ -480,7 +468,6 @@ export class CardFuncs {
     const [row] = await client
       .insert(cardChecklists)
       .values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         cardId: data.cardId,
         title: data.title,
@@ -506,10 +493,7 @@ export class CardFuncs {
     return row;
   }
 
-  async listChecklists(
-    cardId: string,
-    tx?: DB,
-  ): Promise<CardChecklistRow[]> {
+  async listChecklists(cardId: string, tx?: DB): Promise<CardChecklistRow[]> {
     const client = tx || db;
     return client
       .select()
@@ -539,7 +523,6 @@ export class CardFuncs {
     const [row] = await client
       .insert(cardChecklistItems)
       .values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         checklistId: data.checklistId,
         title: data.title,

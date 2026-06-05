@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { status as GrpcStatus } from '@grpc/grpc-js';
-import { randomUUID } from 'crypto';
 import { and, eq } from 'drizzle-orm';
 import { firstValueFrom } from 'rxjs';
 
@@ -125,7 +124,6 @@ export class AddBoardMemberService {
       }
 
       await tx.insert(boardMembers).values({
-        id: randomUUID(),
         workspaceId: data.workspaceId,
         boardId: data.boardId,
         workspaceMemberId: targetMember.id,

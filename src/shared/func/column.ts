@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { boardColumns, cards } from '../db/schema';
@@ -70,7 +69,6 @@ export class ColumnFuncs {
       .insert(boardColumns)
       .values([
         {
-          id: randomUUID(),
           workspaceId: data.workspaceId,
           boardId: data.boardId,
           name: data.name,

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
@@ -53,6 +52,7 @@ export class BoardFuncs {
     data: {
       boardId: string;
       workspaceMemberId: string;
+      workspaceId: string;
     },
     tx?: DB,
   ) {
@@ -71,6 +71,19 @@ export class BoardFuncs {
     if (existing) {
       return;
     }
+
+    const [newMember] = await client
+      .insert(boardMembers)
+      .values({
+        boardId: data.boardId,
+        workspaceMemberId: data.workspaceMemberId,
+        workspaceId: data.workspaceId,
+        joinedAt: new Date(),
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return newMember;
   }
 
   async favoriteBoard(
@@ -99,7 +112,6 @@ export class BoardFuncs {
     }
 
     await client.insert(boardFavorites).values({
-      id: randomUUID(),
       workspaceId: data.workspaceId,
       boardId: data.boardId,
       workspaceMemberId: data.workspaceMemberId,
@@ -258,7 +270,6 @@ export class BoardFuncs {
       .insert(boards)
       .values([
         {
-          id: randomUUID(),
           workspaceId: data.workspaceId,
           name: data.name,
           icon: data.icon ?? null,

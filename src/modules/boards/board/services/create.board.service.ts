@@ -83,10 +83,18 @@ export class CreateBoardService {
       createdBy: user.id,
     });
 
-    await this.boardFuncs.addBoardMember({
+    const boardMember = await this.boardFuncs.addBoardMember({
       boardId: newBoard.id,
       workspaceMemberId: member.id,
+      workspaceId: data.workspaceId,
     });
+
+    if (!boardMember) {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Failed to add board member',
+      });
+    }
 
     return {
       id: newBoard.id,

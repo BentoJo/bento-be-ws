@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { watchers, workspaceMembers } from '../db/schema';
@@ -39,7 +38,6 @@ export class WatcherFuncs {
     }
 
     await client.insert(watchers).values({
-      id: randomUUID(),
       workspaceId: data.workspaceId,
       workspaceMemberId: data.workspaceMemberId,
       watchableId: data.watchableId,

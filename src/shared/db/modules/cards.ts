@@ -26,7 +26,7 @@ import {
 export const labels = pgTable(
   'labels',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -45,7 +45,7 @@ export const labels = pgTable(
 export const cards = pgTable(
   'cards',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -87,7 +87,7 @@ export const cards = pgTable(
 export const cardLabels = pgTable(
   'card_labels',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -109,7 +109,7 @@ export const cardLabels = pgTable(
 export const cardVisibilityMembers = pgTable(
   'card_visibility_members',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -136,7 +136,7 @@ export const cardVisibilityMembers = pgTable(
 export const cardAssignees = pgTable(
   'card_assignees',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -159,7 +159,7 @@ export const cardAssignees = pgTable(
 export const cardAttachments = pgTable(
   'card_attachments',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -183,7 +183,7 @@ export const cardAttachments = pgTable(
 export const cardChecklists = pgTable(
   'card_checklists',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -202,7 +202,7 @@ export const cardChecklists = pgTable(
 export const cardChecklistItems = pgTable(
   'card_checklist_items',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -225,7 +225,7 @@ export const cardChecklistItems = pgTable(
 export const cardComments = pgTable(
   'card_comments',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -258,7 +258,7 @@ export const cardComments = pgTable(
 export const mentions = pgTable(
   'mentions',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
@@ -279,7 +279,7 @@ export const mentions = pgTable(
 export const watchers = pgTable(
   'watchers',
   {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id),
