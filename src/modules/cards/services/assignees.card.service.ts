@@ -16,9 +16,9 @@ import type {
   ListCardAssigneesResponse,
   RemoveCardAssigneeRequest,
 } from '../types';
-import { assertCardInBoard, resolveBoardContext } from './card-access';
 import { AuthzService } from '../../authz/authz.service';
 import { firstValueFrom } from 'rxjs';
+import { CommonFuncs } from '../../../shared/func/common';
 
 @Injectable()
 export class AssigneesCardService {
@@ -28,6 +28,7 @@ export class AssigneesCardService {
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
     private readonly authZ: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async addCardAssignee(
@@ -75,14 +76,14 @@ export class AssigneesCardService {
       });
     }
 
-    const result = await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const perm = await firstValueFrom(
       this.authZ.checkPermission({
@@ -131,7 +132,7 @@ export class AssigneesCardService {
       this.requireUUID(value, name);
     }
 
-    const result = await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
@@ -153,7 +154,7 @@ export class AssigneesCardService {
     }
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     await this.cardFuncs.removeAssignee(data.cardId, data.assigneeId);
 
@@ -179,7 +180,7 @@ export class AssigneesCardService {
       this.requireUUID(value, name);
     }
 
-    const result = await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
@@ -201,7 +202,7 @@ export class AssigneesCardService {
     }
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const rows = await this.cardFuncs.listAssignees(data.cardId);
 

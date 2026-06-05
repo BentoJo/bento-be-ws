@@ -9,7 +9,9 @@ import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
 import { validateUUID } from '../../../shared/validations';
 import type { ActionResponse } from '../../../shared/types/genereal';
 import type { DeleteCardRequest } from '../types';
-import { assertCardInBoard, resolveBoardContext } from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { firstValueFrom } from 'rxjs';
+import { AuthzService } from '../../authz/authz.service';
 
 @Injectable()
 export class DeleteCardService {
@@ -18,6 +20,8 @@ export class DeleteCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authZ: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async deleteCard(
@@ -26,14 +30,29 @@ export class DeleteCardService {
   ): Promise<ActionResponse> {
     this.validateInput(data);
 
-    await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     await this.cardFuncs.update(data.cardId, { deletedAt: new Date() });
 

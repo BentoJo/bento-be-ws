@@ -27,7 +27,9 @@ import type {
   ListChecklistsResponse,
   ToggleChecklistItemRequest,
 } from '../types';
-import { assertCardInBoard, resolveBoardContext } from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { AuthzService } from '../../authz/authz.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class ChecklistsCardService {
@@ -36,6 +38,8 @@ export class ChecklistsCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authz: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async createChecklist(
@@ -59,14 +63,29 @@ export class ChecklistsCardService {
 
     this.requireTitle(data.title);
 
-    const { member } = await resolveBoardContext(data, user, {
+    const { member } = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
+
+    const perm = await firstValueFrom(
+      this.authz.checkPermission({
+        roleId: member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     const position =
       data.position ??
@@ -77,7 +96,7 @@ export class ChecklistsCardService {
       cardId: data.cardId,
       title: data.title,
       position,
-      createdBy: member!.userId,
+      createdBy: member.userId,
     });
 
     return this.toChecklistResponse(checklist, []);
@@ -105,14 +124,14 @@ export class ChecklistsCardService {
 
     this.requireTitle(data.title);
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const checklist = await this.cardFuncs.getChecklist(data.checklistId);
     if (!checklist || checklist.cardId !== data.cardId) {
@@ -157,14 +176,14 @@ export class ChecklistsCardService {
       this.requireUUID(value, name);
     }
 
-    const { member } = await resolveBoardContext(data, user, {
+    const { member } = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const item = await this.cardFuncs.getChecklistItem(data.itemId);
     if (!item || item.checklistId !== data.checklistId) {
@@ -177,7 +196,7 @@ export class ChecklistsCardService {
     const updated = await this.cardFuncs.toggleChecklistItem(
       data.itemId,
       data.isCompleted,
-      member!.userId,
+      member.userId,
     );
 
     if (!updated) {
@@ -209,14 +228,14 @@ export class ChecklistsCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const checklists = await this.cardFuncs.listChecklists(data.cardId);
 
@@ -249,14 +268,14 @@ export class ChecklistsCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const checklist = await this.cardFuncs.getChecklist(data.checklistId);
     if (!checklist || checklist.cardId !== data.cardId) {
@@ -292,14 +311,14 @@ export class ChecklistsCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const item = await this.cardFuncs.getChecklistItem(data.itemId);
     if (!item || item.checklistId !== data.checklistId) {

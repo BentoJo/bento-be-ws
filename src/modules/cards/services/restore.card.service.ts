@@ -9,7 +9,9 @@ import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
 import { validateUUID } from '../../../shared/validations';
 import type { ActionResponse } from '../../../shared/types/genereal';
 import type { RestoreCardRequest } from '../types';
-import { resolveBoardContext } from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { AuthzService } from '../../authz/authz.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class RestoreCardService {
@@ -18,6 +20,8 @@ export class RestoreCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    readonly authZ: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async restoreCard(
@@ -26,7 +30,7 @@ export class RestoreCardService {
   ): Promise<ActionResponse> {
     this.validateInput(data);
 
-    await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
@@ -42,6 +46,21 @@ export class RestoreCardService {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
         message: 'Card not found',
+      });
+    }
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
       });
     }
 

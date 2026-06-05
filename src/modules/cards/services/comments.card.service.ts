@@ -19,7 +19,9 @@ import type {
   ListCardCommentsRequest,
   ListCommentsResponse,
 } from '../types';
-import { assertCardInBoard, resolveBoardContext } from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { firstValueFrom } from 'rxjs';
+import { AuthzService } from '../../authz/authz.service';
 
 @Injectable()
 export class CommentsCardService {
@@ -28,6 +30,8 @@ export class CommentsCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authz: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async addComment(
@@ -70,14 +74,14 @@ export class CommentsCardService {
       });
     }
 
-    const { member } = await resolveBoardContext(data, user, {
+    const { member } = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     if (data.parentCommentId) {
       const parent = await this.cardFuncs.getComment(data.parentCommentId);
@@ -89,10 +93,25 @@ export class CommentsCardService {
       }
     }
 
+    const perm = await firstValueFrom(
+      this.authz.checkPermission({
+        roleId: member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
+
     const comment = await this.cardFuncs.addComment({
       workspaceId: data.workspaceId,
       cardId: data.cardId,
-      workspaceMemberId: member!.id,
+      workspaceMemberId: member.id,
       contentText: data.contentText,
       parentCommentId: data.parentCommentId ?? null,
     });
@@ -119,14 +138,14 @@ export class CommentsCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const page = data.page && data.page > 0 ? data.page : 1;
     const limit = data.limit && data.limit > 0 ? data.limit : 20;
@@ -168,14 +187,14 @@ export class CommentsCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const comment = await this.cardFuncs.getComment(data.commentId);
     if (!comment || comment.cardId !== data.cardId) {

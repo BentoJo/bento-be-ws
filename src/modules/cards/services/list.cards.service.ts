@@ -13,7 +13,7 @@ import type {
   ListCardsResponse,
   ListWorkspaceCardsByDateRequest,
 } from '../types';
-import { resolveBoardContext, toCardResponse } from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
 
 @Injectable()
 export class ListCardsService {
@@ -22,6 +22,7 @@ export class ListCardsService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async listColumnCards(
@@ -43,7 +44,7 @@ export class ListCardsService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
@@ -53,7 +54,7 @@ export class ListCardsService {
       includeArchived: data.includeArchived,
     });
 
-    return { cards: rows.map(toCardResponse) };
+    return { cards: rows.map((card) => this.commonFuncs.toCardResponse(card)) };
   }
 
   async listBoardCards(
@@ -74,7 +75,7 @@ export class ListCardsService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
@@ -84,7 +85,7 @@ export class ListCardsService {
       includeArchived: data.includeArchived,
     });
 
-    return { cards: rows.map(toCardResponse) };
+    return { cards: rows.map((card) => this.commonFuncs.toCardResponse(card)) };
   }
 
   async listWorkspaceCardsByDate(
@@ -146,7 +147,7 @@ export class ListCardsService {
       to,
     );
 
-    return { cards: rows.map(toCardResponse) };
+    return { cards: rows.map((card) => this.commonFuncs.toCardResponse(card)) };
   }
 
   private requireUUID(value: string, name: string): void {

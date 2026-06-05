@@ -145,6 +145,7 @@ export class CardFuncs {
     return row;
   }
 
+  // cards should also check in the card visibility table (if the card is private to appear for the assignees and the creator only)
   async listByColumn(
     columnId: string,
     opts?: { includeArchived?: boolean },

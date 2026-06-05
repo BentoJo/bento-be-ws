@@ -8,11 +8,9 @@ import { WorkspaceFuncs } from '../../../shared/func/workspace';
 import { WorkspaceMembersFuncs } from '../../../shared/func/workspace-members';
 import { validateUUID } from '../../../shared/validations';
 import type { CardResponse, GetCardRequest } from '../types';
-import {
-  assertCardInBoard,
-  resolveBoardContext,
-  toCardResponse,
-} from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { AuthzService } from '../../authz/authz.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class GetCardService {
@@ -21,21 +19,38 @@ export class GetCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authZ: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async getCard(data: GetCardRequest, user: GrpcUser): Promise<CardResponse> {
     this.validateInput(data);
 
-    await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
-    return toCardResponse(card);
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:read',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'You do not have permission to view this card',
+      });
+    }
+
+    return this.commonFuncs.toCardResponse(card);
   }
 
   private validateInput(data: GetCardRequest): void {

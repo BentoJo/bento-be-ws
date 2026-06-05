@@ -13,11 +13,9 @@ import {
   validateUUID,
 } from '../../../shared/validations';
 import type { CardResponse, UpdateCardRequest } from '../types';
-import {
-  assertCardInBoard,
-  resolveBoardContext,
-  toCardResponse,
-} from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { firstValueFrom } from 'rxjs';
+import { AuthzService } from '../../authz/authz.service';
 
 @Injectable()
 export class UpdateCardService {
@@ -26,6 +24,8 @@ export class UpdateCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authZ: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async updateCard(
@@ -34,14 +34,33 @@ export class UpdateCardService {
   ): Promise<CardResponse> {
     this.validateInput(data);
 
-    await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const existing = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(existing, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(
+      existing,
+      data.workspaceId,
+      data.boardId,
+    );
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     const updated = await this.cardFuncs.update(data.cardId, {
       title: data.title,
@@ -71,7 +90,7 @@ export class UpdateCardService {
       });
     }
 
-    return toCardResponse(updated);
+    return this.commonFuncs.toCardResponse(updated);
   }
 
   private validateInput(data: UpdateCardRequest): void {

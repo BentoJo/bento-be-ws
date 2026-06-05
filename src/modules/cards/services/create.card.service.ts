@@ -14,7 +14,9 @@ import {
   validateUUID,
 } from '../../../shared/validations';
 import type { CardResponse, CreateCardRequest } from '../types';
-import { resolveBoardContext, toCardResponse } from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { AuthzService } from '../../authz/authz.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class CreateCardService {
@@ -23,6 +25,8 @@ export class CreateCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authZ: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async createCard(
@@ -31,11 +35,26 @@ export class CreateCardService {
   ): Promise<CardResponse> {
     this.validateInput(data);
 
-    await resolveBoardContext(data, user, {
+    const result = await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: result.member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
 
     const position =
       data.position ?? (await this.cardFuncs.nextColumnPosition(data.columnId));
@@ -54,7 +73,7 @@ export class CreateCardService {
       createdBy: user.id,
     });
 
-    return toCardResponse(card);
+    return this.commonFuncs.toCardResponse(card);
   }
 
   private validateInput(data: CreateCardRequest): void {

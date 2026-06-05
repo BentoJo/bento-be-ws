@@ -23,7 +23,9 @@ import type {
   ListWorkspaceLabelsRequest,
   RemoveCardLabelRequest,
 } from '../types';
-import { assertCardInBoard, resolveBoardContext } from './card-access';
+import { CommonFuncs } from '../../../shared/func/common';
+import { AuthzService } from '../../authz/authz.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class LabelsCardService {
@@ -32,6 +34,8 @@ export class LabelsCardService {
     private readonly workspaceMembers: WorkspaceMembersFuncs,
     private readonly boardFuncs: BoardFuncs,
     private readonly cardFuncs: CardFuncs,
+    private readonly authZ: AuthzService,
+    private readonly commonFuncs: CommonFuncs,
   ) {}
 
   async createLabel(
@@ -78,6 +82,21 @@ export class LabelsCardService {
     }
 
     const member = await this.requireWorkspaceMember(data.workspaceId, user);
+
+    const perm = await firstValueFrom(
+      this.authZ.checkPermission({
+        roleId: member.authzRoleId,
+        scopeId: data.workspaceId,
+        permission: 'workspace:card:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'You do not have permission to view this card',
+      });
+    }
 
     const label = await this.cardFuncs.createLabel({
       workspaceId: data.workspaceId,
@@ -160,14 +179,14 @@ export class LabelsCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     const label = await this.cardFuncs.getLabel(data.labelId);
     if (!label || label.workspaceId !== data.workspaceId) {
@@ -206,14 +225,14 @@ export class LabelsCardService {
       this.requireUUID(value, name);
     }
 
-    await resolveBoardContext(data, user, {
+    await this.commonFuncs.resolveBoardContext(data, user, {
       workspaceFuncs: this.workspaceFuncs,
       workspaceMembers: this.workspaceMembers,
       boardFuncs: this.boardFuncs,
     });
 
     const card = await this.cardFuncs.getActiveCard(data.cardId);
-    assertCardInBoard(card, data.workspaceId, data.boardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
 
     await this.cardFuncs.removeCardLabel(data.cardId, data.labelId);
 
