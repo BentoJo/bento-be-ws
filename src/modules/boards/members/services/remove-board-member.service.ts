@@ -71,21 +71,6 @@ export class RemoveBoardMemberService {
         });
       }
 
-      const permission = await firstValueFrom(
-        this.authZ.checkPermission({
-          roleId: requesterMember.authzRoleId,
-          scopeId: data.workspaceId,
-          permission: 'workspace:board_members:manage',
-        }),
-      );
-
-      if (!permission?.allowed) {
-        throw new RpcException({
-          code: GrpcStatus.PERMISSION_DENIED,
-          message: 'Permission denied',
-        });
-      }
-
       const board = await this.boardFuncs.getActiveBoard(data.boardId, tx);
 
       if (!board || board.workspaceId !== data.workspaceId) {
@@ -123,6 +108,21 @@ export class RemoveBoardMemberService {
         throw new RpcException({
           code: GrpcStatus.NOT_FOUND,
           message: 'Board member not found',
+        });
+      }
+
+      const permission = await firstValueFrom(
+        this.authZ.checkPermission({
+          roleId: requesterMember.authzRoleId,
+          scopeId: data.workspaceId,
+          permission: 'workspace:board_members:manage',
+        }),
+      );
+
+      if (!permission?.allowed) {
+        throw new RpcException({
+          code: GrpcStatus.PERMISSION_DENIED,
+          message: 'Permission denied',
         });
       }
 

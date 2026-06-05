@@ -49,6 +49,30 @@ export class BoardFuncs {
     return !!row;
   }
 
+  async addBoardMember(
+    data: {
+      boardId: string;
+      workspaceMemberId: string;
+    },
+    tx?: DB,
+  ) {
+    const client = tx || db;
+    const [existing] = await client
+      .select({ id: boardMembers.id })
+      .from(boardMembers)
+      .where(
+        and(
+          eq(boardMembers.boardId, data.boardId),
+          eq(boardMembers.workspaceMemberId, data.workspaceMemberId),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      return;
+    }
+  }
+
   async favoriteBoard(
     data: {
       workspaceId: string;

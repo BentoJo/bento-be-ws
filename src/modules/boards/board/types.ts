@@ -11,6 +11,13 @@ export interface CreateBoardRequest {
   visibility?: 'public' | 'private';
 }
 
+export interface CreateBoardMemberRequest {
+  workspaceId: string;
+  boardId: string;
+  userId: string;
+  overrideRoleId?: string;
+}
+
 export interface UpdateBoardRequest {
   workspaceId: string;
   boardId: string;

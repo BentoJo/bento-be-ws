@@ -56,6 +56,15 @@ export class DeleteBoardService {
       });
     }
 
+    const board = await this.boardFuncs.getActiveBoard(data.boardId);
+
+    if (!board || board.workspaceId !== data.workspaceId) {
+      throw new RpcException({
+        code: GrpcStatus.NOT_FOUND,
+        message: 'Board not found',
+      });
+    }
+
     const permission = await firstValueFrom(
       this.authZ.checkPermission({
         roleId: member.authzRoleId,
@@ -68,15 +77,6 @@ export class DeleteBoardService {
       throw new RpcException({
         code: GrpcStatus.PERMISSION_DENIED,
         message: 'Permission denied',
-      });
-    }
-
-    const board = await this.boardFuncs.getActiveBoard(data.boardId);
-
-    if (!board || board.workspaceId !== data.workspaceId) {
-      throw new RpcException({
-        code: GrpcStatus.NOT_FOUND,
-        message: 'Board not found',
       });
     }
 

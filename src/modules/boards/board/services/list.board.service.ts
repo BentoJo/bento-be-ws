@@ -54,14 +54,14 @@ export class ListBoardsService {
             scopeId: data.workspaceId,
             permissions: [
               'workspace:boards:manage',
-              'workspace:boards:view-all',
+              'workspace:boards:read_private',
             ],
           }),
         );
 
         canViewAll =
           !!permissions?.results?.['workspace:boards:manage'] ||
-          !!permissions?.results?.['workspace:boards:view-all'];
+          !!permissions?.results?.['workspace:boards:read_private'];
       }
     }
 

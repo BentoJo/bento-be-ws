@@ -83,6 +83,11 @@ export class CreateBoardService {
       createdBy: user.id,
     });
 
+    await this.boardFuncs.addBoardMember({
+      boardId: newBoard.id,
+      workspaceMemberId: member.id,
+    });
+
     return {
       id: newBoard.id,
       workspaceId: newBoard.workspaceId,
