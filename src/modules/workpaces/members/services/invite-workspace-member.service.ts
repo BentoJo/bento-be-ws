@@ -24,12 +24,14 @@ import { AuthzService } from '../../../authz/authz.service';
 import { generateSecureToken } from '../utils/generate-token.util';
 import { inviteHtml } from '../utils/invite-html';
 import { sendEmail } from '../utils/ses.config';
+import { IamService } from '../../../iam/iam.service';
 
 @Injectable()
 export class InviteWorkspaceMemberService {
   constructor(
     private readonly checkWorkspaceMember: WorkspaceMembersFuncs,
     private readonly authZ: AuthzService,
+    private readonly iam: IamService,
   ) {}
   async inviteWorkspaceMember(
     data: InviteWorkspaceMemberRequest,
@@ -120,17 +122,38 @@ export class InviteWorkspaceMemberService {
         });
       }
 
+      const inviter = await firstValueFrom(
+        this.iam.getUserById({ userId: user.id }),
+      );
+
+      if (!inviter.user) {
+        throw new RpcException({
+          code: GrpcStatus.INTERNAL,
+          message: 'Failed to retrieve inviter information',
+        });
+      }
+
       const acc_url = `${process.env.FRONTEND_URL}/accept-invite?token=${token}`;
       const rej_url = `${process.env.FRONTEND_URL}/reject-invite?token=${token}`;
       const subject =
         'Workspace Invitation - You have been invited to join a workspace';
-      const htmlContent = inviteHtml
-        .replace('{{accept_url}}', acc_url)
-        .replace('{{reject_url}}', rej_url)
-        .replace('{{email}}', data.email)
-        .replace('{{recipient_url}}', data.email);
+      const html = inviteHtml
+        .replace(/{{name}}/g, data.email.split('@')[0])
+        .replace(
+          /{{inviterName}}/g,
+          `${inviter.user?.firstName} ${inviter.user?.lastName}`,
+        )
+        .replace(/{{workspaceName}}/g, workspace.name)
+        .replace(
+          '{{acceptUrl}}',
+          `https://yourdomain.com/invite/accept?token=${acc_url}`,
+        )
+        .replace(
+          '{{declineUrl}}',
+          `https://yourdomain.com/invite/decline?token=${rej_url}`,
+        );
 
-      await sendEmail(data.email, subject, htmlContent).catch(console.error);
+      await sendEmail(data.email, subject, html).catch(console.error);
 
       return {
         inviteId: invite.id,
