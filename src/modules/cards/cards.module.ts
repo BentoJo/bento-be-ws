@@ -17,6 +17,7 @@ import { AssigneesCardService } from './services/assignees.card.service';
 import { LabelsCardService } from './services/labels.card.service';
 import { CommentsCardService } from './services/comments.card.service';
 import { ChecklistsCardService } from './services/checklists.card.service';
+import { CommonFuncs } from '../../shared/func/common';
 
 @Module({
   imports: [AuthzModule],
@@ -25,6 +26,7 @@ import { ChecklistsCardService } from './services/checklists.card.service';
     BoardFuncs,
     CardFuncs,
     WorkspaceFuncs,
+    CommonFuncs,
     WorkspaceMembersFuncs,
     CreateCardService,
     GetCardService,
