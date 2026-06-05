@@ -111,7 +111,6 @@ export class GetWorkspaceOverviewService {
           eq(workspaceMembers.isActive, true),
         ),
       );
-    console.log(membersCountQ);
 
     const teamsCountQ = db
       .select({ total: sql<number>`COUNT(*)` })

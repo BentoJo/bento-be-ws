@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { status as GrpcStatus } from '@grpc/grpc-js';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import { AuthzService } from '../../../authz/authz.service';
 import { GrpcUser } from '../../../../shared/decorators/meta.decorator';
 import { BoardResponse, CreateBoardRequest } from '../types';
@@ -14,6 +14,7 @@ import {
 import { WorkspaceFuncs } from '../../../../shared/func/workspace';
 import { WorkspaceMembersFuncs } from '../../../../shared/func/workspace-members';
 import { BoardFuncs } from '../../../../shared/func/board';
+import db from '../../../../shared/configs/db.config';
 
 @Injectable()
 export class CreateBoardService {
@@ -37,6 +38,7 @@ export class CreateBoardService {
       });
     }
 
+    // 1. Workspace check (outside tx)
     const workspace = await this.workspaceFuncs.findByIdActive(
       data.workspaceId,
     );
@@ -48,6 +50,7 @@ export class CreateBoardService {
       });
     }
 
+    // 2. Member check (outside tx)
     const member = await this.workspaceMembers.getWorkspaceMember(
       data.workspaceId,
       user.id,
@@ -60,51 +63,72 @@ export class CreateBoardService {
       });
     }
 
-    const perm = await firstValueFrom(
-      this.authZ.checkPermission({
-        roleId: member.authzRoleId,
-        scopeId: data.workspaceId,
-        permission: 'workspace:boards:manage',
-      }),
-    );
+    // 3. Permission check (with timeout protection)
+    try {
+      const perm = await firstValueFrom(
+        this.authZ
+          .checkPermission({
+            roleId: member.authzRoleId,
+            scopeId: data.workspaceId,
+            permission: 'workspace:boards:manage',
+          })
+          .pipe(timeout(5000)),
+      );
 
-    if (!perm?.allowed) {
+      if (!perm?.allowed) {
+        throw new RpcException({
+          code: GrpcStatus.PERMISSION_DENIED,
+          message: 'Permission denied',
+        });
+      }
+    } catch {
       throw new RpcException({
-        code: GrpcStatus.PERMISSION_DENIED,
-        message: 'Permission denied',
+        code: GrpcStatus.DEADLINE_EXCEEDED,
+        message: 'Authorization service timeout',
       });
     }
 
-    const newBoard = await this.boardFuncs.create({
-      workspaceId: data.workspaceId,
-      name: data.name,
-      icon: data.icon ?? null,
-      visibility: data.visibility,
-      createdBy: user.id,
-    });
+    // 4. DB transaction (atomic)
+    const result = await db.transaction(async (tx) => {
+      const newBoard = await this.boardFuncs.create(
+        {
+          workspaceId: data.workspaceId,
+          name: data.name,
+          icon: data.icon ?? null,
+          visibility: data.visibility,
+          createdBy: user.id,
+        },
+        tx,
+      );
 
-    const boardMember = await this.boardFuncs.addBoardMember({
-      boardId: newBoard.id,
-      workspaceMemberId: member.id,
-      workspaceId: data.workspaceId,
-    });
+      const boardMember = await this.boardFuncs.addBoardMember(
+        {
+          boardId: newBoard.id,
+          workspaceMemberId: member.id,
+          workspaceId: data.workspaceId,
+        },
+        tx,
+      );
 
-    if (!boardMember) {
-      throw new RpcException({
-        code: GrpcStatus.INTERNAL,
-        message: 'Failed to add board member',
-      });
-    }
+      if (!boardMember) {
+        throw new RpcException({
+          code: GrpcStatus.INTERNAL,
+          message: 'Failed to add board member',
+        });
+      }
+
+      return newBoard;
+    });
 
     return {
-      id: newBoard.id,
-      workspaceId: newBoard.workspaceId,
-      name: newBoard.name,
-      icon: newBoard.icon ?? null,
-      visibility: newBoard.visibility ?? 'public',
-      createdBy: newBoard.createdBy,
-      createdAt: newBoard.createdAt
-        ? newBoard.createdAt.toISOString()
+      id: result.id,
+      workspaceId: result.workspaceId,
+      name: result.name,
+      icon: result.icon ?? null,
+      visibility: result.visibility ?? 'public',
+      createdBy: result.createdBy,
+      createdAt: result.createdAt
+        ? result.createdAt.toISOString()
         : new Date().toISOString(),
     };
   }
