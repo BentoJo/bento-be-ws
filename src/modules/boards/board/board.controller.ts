@@ -51,6 +51,12 @@ export class BoardController {
     @Payload() data: CreateBoardRequest,
     @GrpcUser() user: GrpcUser,
   ): Promise<BoardResponse> {
+    console.log(
+      'Received CreateBoard request with data:',
+      data,
+      'and user:',
+      user,
+    );
     return this.createBoardService.createBoard(data, user);
   }
 
