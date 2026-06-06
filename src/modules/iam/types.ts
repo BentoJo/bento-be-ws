@@ -5,12 +5,15 @@ export interface UserInfo {
   email: string;
   firstName: string;
   lastName: string;
-  avatarUrl: string | null;
-  jobTitle: string | null;
-  bio: string | null;
-  phone: string | null;
-  dob: string | null;
-  gender: string | null;
+  avatarUrl: string;
+  bio: string;
+  phone: string;
+  dob: string;
+  gender: string;
+  authStatus: string;
+  globalRole: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface GetUsersByIdsRequest {
@@ -25,9 +28,7 @@ export interface GetUserByIdRequest {
   userId: string;
 }
 
-export interface GetUserByIdResponse {
-  user?: UserInfo;
-}
+export type GetUserByIdResponse = UserInfo;
 
 export interface UserServiceClient {
   GetUsersByIds(req: GetUsersByIdsRequest): Observable<GetUsersByIdsResponse>;

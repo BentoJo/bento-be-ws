@@ -7,10 +7,13 @@ message UserInfo {
     string email = 2;
     string firstName = 3;
     string lastName = 4;
-    optional string avatarUrl = 5;
-    optional string jobTitle = 6;
-    optional string bio = 7;
-    optional string phone = 8;
-    optional string dob = 9;
-    optional string gender = 10;
+    string avatarUrl = 5;
+    string bio = 6;
+    string phone = 7;
+    string dob = 8;
+    string gender = 9;
+    string authStatus = 10;
+    string globalRole = 11;
+    string createdAt = 12;
+    string updatedAt = 13;
 }

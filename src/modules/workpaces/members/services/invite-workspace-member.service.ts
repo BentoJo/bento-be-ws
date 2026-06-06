@@ -102,7 +102,6 @@ export class InviteWorkspaceMemberService {
       }
 
       const token = generateSecureToken();
-
       const [invite] = await tx
         .insert(workspaceInvites)
         .values({
@@ -126,7 +125,7 @@ export class InviteWorkspaceMemberService {
         this.iam.getUserById({ userId: user.id }),
       );
 
-      if (!inviter.user) {
+      if (!inviter?.id) {
         throw new RpcException({
           code: GrpcStatus.INTERNAL,
           message: 'Failed to retrieve inviter information',
@@ -139,10 +138,7 @@ export class InviteWorkspaceMemberService {
         'Workspace Invitation - You have been invited to join a workspace';
       const html = inviteHtml
         .replace(/{{name}}/g, data.email.split('@')[0])
-        .replace(
-          /{{inviterName}}/g,
-          `${inviter.user?.firstName} ${inviter.user?.lastName}`,
-        )
+        .replace(/{{inviterName}}/g, `${inviter.firstName} ${inviter.lastName}`)
         .replace(/{{workspaceName}}/g, workspace.name)
         .replace(
           '{{acceptUrl}}',

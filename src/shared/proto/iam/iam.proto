@@ -1,52 +1,46 @@
 syntax = "proto3";
 
 package user;
-import "auth.proto";
 
 service UserService {
-    rpc updateUserProfile (UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
-    rpc deleteUserProfile (DeleteUserProfileRequest) returns (DeleteUserProfileResponse);
-    rpc GetUsersByIds (GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
-    rpc GetUser (GetUserByIdRequest) returns (GetUserByIdResponse);
+  rpc GetUser (GetUserRequest) returns (UserProfile);
+  rpc UpdateUser (UpdateUserRequest) returns (UserProfile);
+  rpc GetUsersByIds (GetUsersByIdsRequest) returns (UsersResponse);
 }
 
-message UpdateUserProfileRequest {
-    string user_id = 1;
-    optional string firstName = 2;
-    optional string lastName = 3;
-    optional string avatarUrl = 4;
-    optional string jobTitle = 5;
-    optional string bio = 6;
-    optional string phone = 7;
-    optional string dob = 8;
-    optional string gender = 9;
+message GetUserRequest {
+  string userId = 1;
 }
 
-message UpdateUserProfileResponse {
-    auth.UserInfo user = 1;
-}
-
-message DeleteUserProfileRequest {
-    string user_id = 1;
-}
-
-message DeleteUserProfileResponse {
-    bool success = 1;
-    string message = 2;
+message UpdateUserRequest {
+  string          userId    = 1;
+  optional string firstName = 2;
+  optional string lastName  = 3;
+  optional string avatarUrl = 4;
+  optional string bio       = 5;
+  optional string phone     = 6;
+  optional string dob       = 7;
+  optional string gender    = 8;
 }
 
 message GetUsersByIdsRequest {
-    repeated string user_ids = 1;
+  repeated string userIds = 1;
 }
 
-message GetUsersByIdsResponse {
-    repeated auth.UserInfo users = 1;
+message UsersResponse {
+  repeated UserProfile users = 1;
 }
 
-message GetUserByIdRequest {
-    string user_id = 1;
-}
-
-message GetUserByIdResponse {
-    auth.UserInfo user = 1;
+message UserProfile {
+  string id         = 1;
+  string email      = 2;
+  string firstName  = 3;
+  string lastName   = 4;
+  string avatarUrl  = 5;
+  string bio        = 6;
+  string phone      = 7;
+  string dob        = 8;
+  string gender     = 9;
+  string globalRole = 10;
+  string createdAt  = 11;
 }

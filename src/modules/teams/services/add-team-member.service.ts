@@ -122,7 +122,7 @@ export class AddTeamMemberService {
       this.iam.getUserById({ userId: data.workspaceMemberId }),
     );
 
-    if (!userInfo?.user) {
+    if (!userInfo?.id) {
       throw new RpcException({
         code: GrpcStatus.INTERNAL,
         message: 'Failed to retrieve user info',
@@ -133,11 +133,11 @@ export class AddTeamMemberService {
       id: created.id,
       teamId: created.teamId,
       user: {
-        id: userInfo.user?.id,
-        email: userInfo.user?.email,
-        firstName: userInfo.user?.firstName,
-        lastName: userInfo.user?.lastName,
-        avatarUrl: userInfo.user?.avatarUrl,
+        id: userInfo.id,
+        email: userInfo.email,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        avatarUrl: userInfo.avatarUrl,
       }, // : created.workspaceMemberId,
       joinedAt: (created.joinedAt ?? new Date()).toISOString(),
     };
