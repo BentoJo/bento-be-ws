@@ -31,6 +31,7 @@ export class CreateBoardService {
   ): Promise<BoardResponse> {
     this.validateInput(data);
 
+    console.log('Creating board with data:', data, 'for user:', user?.id);
     if (!user?.id) {
       throw new RpcException({
         code: GrpcStatus.UNAUTHENTICATED,
@@ -38,17 +39,20 @@ export class CreateBoardService {
       });
     }
 
+    console.log('User is authenticated:', user.id);
     // 1. Workspace check (outside tx)
     const workspace = await this.workspaceFuncs.findByIdActive(
       data.workspaceId,
     );
 
+    console.log('Workspace found:', !!workspace);
     if (!workspace) {
       throw new RpcException({
         code: GrpcStatus.NOT_FOUND,
         message: 'Workspace not found',
       });
     }
+    console.log('Workspace is active:', workspace.id);
 
     // 2. Member check (outside tx)
     const member = await this.workspaceMembers.getWorkspaceMember(
@@ -56,6 +60,7 @@ export class CreateBoardService {
       user.id,
     );
 
+    console.log('Member found:', !!member);
     if (!member || !member.isActive) {
       throw new RpcException({
         code: GrpcStatus.PERMISSION_DENIED,
@@ -63,6 +68,7 @@ export class CreateBoardService {
       });
     }
 
+    console.log('Member is active:', member.id);
     // 3. Permission check (with timeout protection)
     try {
       const perm = await firstValueFrom(
@@ -75,6 +81,7 @@ export class CreateBoardService {
           .pipe(timeout(5000)),
       );
 
+      console.log('Permission check result:', perm);
       if (!perm?.allowed) {
         throw new RpcException({
           code: GrpcStatus.PERMISSION_DENIED,
@@ -82,6 +89,7 @@ export class CreateBoardService {
         });
       }
     } catch {
+      console.error('Authorization service timeout or error');
       throw new RpcException({
         code: GrpcStatus.DEADLINE_EXCEEDED,
         message: 'Authorization service timeout',
@@ -89,7 +97,9 @@ export class CreateBoardService {
     }
 
     // 4. DB transaction (atomic)
+    console.log('Starting DB transaction to create board');
     const result = await db.transaction(async (tx) => {
+      console.log('Creating board record in DB');
       const newBoard = await this.boardFuncs.create(
         {
           workspaceId: data.workspaceId,
@@ -101,6 +111,7 @@ export class CreateBoardService {
         tx,
       );
 
+      console.log('Board created with ID:', newBoard.id);
       const boardMember = await this.boardFuncs.addBoardMember(
         {
           boardId: newBoard.id,
@@ -109,7 +120,7 @@ export class CreateBoardService {
         },
         tx,
       );
-
+      console.log('Board member added:', !!boardMember);
       if (!boardMember) {
         throw new RpcException({
           code: GrpcStatus.INTERNAL,
@@ -119,6 +130,7 @@ export class CreateBoardService {
 
       return newBoard;
     });
+    console.log('DB transaction completed, returning result');
 
     return {
       id: result.id,
