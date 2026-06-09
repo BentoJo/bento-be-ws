@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { AuthzService } from './authz.service';
+import { RolesController } from './roles.controller';
 
 const protoPath =
   process.env.AUTHZ_PROTO_PATH ||
@@ -22,6 +23,7 @@ const url = process.env.AUTHZ_URL || 'authz-service:50053';
       },
     ]),
   ],
+  controllers: [RolesController],
   providers: [AuthzService],
   exports: [AuthzService],
 })
