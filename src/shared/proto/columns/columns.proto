@@ -75,9 +75,9 @@ message ColumnResponse {
 
   bool isArchived = 6;
 
-  google.protobuf.Timestamp createdAt = 7;
+  string createdAt = 7;
 
-  optional google.protobuf.Timestamp updatedAt = 8;
+  optional string updatedAt = 8;
 }
 
 message GetColumnRequest {
@@ -233,7 +233,7 @@ message ColumnCardListItem {
 
   bool completed = 4;
 
-  optional google.protobuf.Timestamp dueDate = 5;
+  optional string dueDate = 5;
 }
 
 message ListColumnCardsResponse {
