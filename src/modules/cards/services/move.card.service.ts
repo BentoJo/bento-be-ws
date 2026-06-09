@@ -43,7 +43,7 @@ export class MoveCardService {
       this.authZ.checkPermission({
         roleId: result.member.authzRoleId,
         scopeId: data.workspaceId,
-        permission: 'workspace:card:manage',
+        permission: 'workspace:cards:manage',
       }),
     );
 

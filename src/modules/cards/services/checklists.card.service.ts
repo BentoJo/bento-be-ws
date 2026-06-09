@@ -76,7 +76,7 @@ export class ChecklistsCardService {
       this.authz.checkPermission({
         roleId: member.authzRoleId,
         scopeId: data.workspaceId,
-        permission: 'workspace:card:manage',
+        permission: 'workspace:cards:manage',
       }),
     );
 

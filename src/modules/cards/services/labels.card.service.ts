@@ -87,7 +87,7 @@ export class LabelsCardService {
       this.authZ.checkPermission({
         roleId: member.authzRoleId,
         scopeId: data.workspaceId,
-        permission: 'workspace:card:manage',
+        permission: 'workspace:cards:manage',
       }),
     );
 
