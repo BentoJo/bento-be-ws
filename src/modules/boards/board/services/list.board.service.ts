@@ -45,7 +45,14 @@ export class ListBoardsService {
         user.id,
       );
 
-      isMember = !!member?.isActive;
+      if (!member || !member.isActive) {
+        throw new RpcException({
+          code: GrpcStatus.PERMISSION_DENIED,
+          message: 'you must be a workspace member to view boards',
+        });
+      }
+
+      isMember = member?.isActive;
 
       if (member?.isActive) {
         const permissions = await firstValueFrom(
