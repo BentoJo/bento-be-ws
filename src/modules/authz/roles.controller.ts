@@ -16,15 +16,39 @@ import type {
 } from './types';
 import { Observable } from 'rxjs';
 import { GrpcUser } from '../../shared/decorators/meta.decorator';
-import { GetWorkspaceMemberRoleService } from '../workpaces/workspace-roles/services/get-workspace-member-role.service';
 import { status as GrpcStatus } from '@grpc/grpc-js';
+import db from '../../shared/configs/db.config';
+import { workspaceMembers } from '../../shared/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 @Controller()
 export class RolesController {
-  constructor(
-    private readonly authzService: AuthzService,
-    private readonly getWorkspaceMemberRoleService: GetWorkspaceMemberRoleService,
-  ) {}
+  constructor(private readonly authzService: AuthzService) {}
+
+  async getWorkspaceMemberRole(user: GrpcUser, workspaceId: string) {
+    try {
+      const memberRole = await db
+        .select({
+          authzRoleId: workspaceMembers.authzRoleId,
+        })
+        .from(workspaceMembers)
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, workspaceId),
+            eq(workspaceMembers.userId, user.id),
+            eq(workspaceMembers.isActive, true),
+          ),
+        )
+        .limit(1)
+        .then((res) => res[0]);
+      return memberRole;
+    } catch {
+      throw new RpcException({
+        code: GrpcStatus.INTERNAL,
+        message: 'Failed to get workspace member role',
+      });
+    }
+  }
 
   @GrpcMethod('AuthorizationService', 'CreateRole')
   async createRole(
@@ -32,14 +56,7 @@ export class RolesController {
     @GrpcUser() user: GrpcUser,
   ): Promise<Observable<CreateRoleResponse>> {
     // TODO: Check permission
-    const memberRole =
-      await this.getWorkspaceMemberRoleService.getWorkspaceMemberRole(
-        {
-          workspaceId: data.scopeId,
-          userId: user.id,
-        },
-        user,
-      );
+    const memberRole = await this.getWorkspaceMemberRole(user, data.scopeId);
 
     const perm = this.authzService.checkPermission({
       roleId: memberRole.authzRoleId,
@@ -62,14 +79,7 @@ export class RolesController {
     @GrpcUser() user: GrpcUser,
   ): Promise<Observable<UpdateRoleResponse>> {
     // TODO: Check permission
-    const memberRole =
-      await this.getWorkspaceMemberRoleService.getWorkspaceMemberRole(
-        {
-          workspaceId: data.scopeId,
-          userId: user.id,
-        },
-        user,
-      );
+    const memberRole = await this.getWorkspaceMemberRole(user, data.scopeId);
 
     const perm = this.authzService.checkPermission({
       roleId: memberRole.authzRoleId,
@@ -92,14 +102,7 @@ export class RolesController {
     @GrpcUser() user: GrpcUser,
   ): Promise<Observable<DeleteRoleResponse>> {
     // TODO: Check permission
-    const memberRole =
-      await this.getWorkspaceMemberRoleService.getWorkspaceMemberRole(
-        {
-          workspaceId: data.scopeId,
-          userId: user.id,
-        },
-        user,
-      );
+    const memberRole = await this.getWorkspaceMemberRole(user, data.scopeId);
 
     const perm = this.authzService.checkPermission({
       roleId: memberRole.authzRoleId,
@@ -122,14 +125,7 @@ export class RolesController {
     @GrpcUser() user: GrpcUser,
   ): Promise<Observable<AssignPermissionsResponse>> {
     // TODO: Check permission
-    const memberRole =
-      await this.getWorkspaceMemberRoleService.getWorkspaceMemberRole(
-        {
-          workspaceId: data.scopeId,
-          userId: user.id,
-        },
-        user,
-      );
+    const memberRole = await this.getWorkspaceMemberRole(user, data.scopeId);
 
     const perm = this.authzService.checkPermission({
       roleId: memberRole.authzRoleId,
@@ -152,14 +148,7 @@ export class RolesController {
     @GrpcUser() user: GrpcUser,
   ): Promise<Observable<RemovePermissionsResponse>> {
     // TODO: Check permission
-    const memberRole =
-      await this.getWorkspaceMemberRoleService.getWorkspaceMemberRole(
-        {
-          workspaceId: data.scopeId,
-          userId: user.id,
-        },
-        user,
-      );
+    const memberRole = await this.getWorkspaceMemberRole(user, data.scopeId);
 
     const perm = this.authzService.checkPermission({
       roleId: memberRole.authzRoleId,
