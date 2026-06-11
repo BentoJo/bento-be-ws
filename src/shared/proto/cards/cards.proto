@@ -59,6 +59,9 @@ service CardService {
   rpc RemoveCardLabel(RemoveCardLabelRequest)
       returns (workspace.common.ActionResponse);
 
+  rpc ListCardLabels(ListCardLabelsRequest)
+      returns (ListLabelsResponse);
+
   rpc CreateLabel(CreateLabelRequest)
       returns (LabelResponse);
 
@@ -370,6 +373,14 @@ message AddCardLabelRequest {
   string cardId = 3;
 
   string labelId = 4;
+}
+
+message ListCardLabelsRequest {
+  string workspaceId = 1;
+
+  string boardId = 2;
+
+  string cardId = 3;
 }
 
 message RemoveCardLabelRequest {

@@ -184,6 +184,12 @@ export interface ListWorkspaceLabelsRequest {
   workspaceId: string;
 }
 
+export interface ListCardLabelsRequest {
+  workspaceId: string;
+  boardId: string;
+  cardId: string;
+}
+
 export interface ListLabelsResponse {
   labels: LabelResponse[];
 }

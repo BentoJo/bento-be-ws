@@ -19,6 +19,7 @@ import type {
   CreateLabelRequest,
   DeleteLabelRequest,
   LabelResponse,
+  ListCardLabelsRequest,
   ListLabelsResponse,
   ListWorkspaceLabelsRequest,
   RemoveCardLabelRequest,
@@ -237,6 +238,38 @@ export class LabelsCardService {
     await this.cardFuncs.removeCardLabel(data.cardId, data.labelId);
 
     return { success: true, message: 'Label removed from card successfully' };
+  }
+
+  async listCardLabels(
+    data: ListCardLabelsRequest,
+    user: GrpcUser,
+  ): Promise<ListLabelsResponse> {
+    if (!data) {
+      throw new RpcException({
+        code: GrpcStatus.INVALID_ARGUMENT,
+        message: 'Request body is required',
+      });
+    }
+
+    for (const [value, name] of [
+      [data.workspaceId, 'Workspace ID'],
+      [data.boardId, 'Board ID'],
+      [data.cardId, 'Card ID'],
+    ] as const) {
+      this.requireUUID(value, name);
+    }
+
+    await this.commonFuncs.resolveBoardContext(data, user, {
+      workspaceFuncs: this.workspaceFuncs,
+      workspaceMembers: this.workspaceMembers,
+      boardFuncs: this.boardFuncs,
+    });
+
+    const card = await this.cardFuncs.getActiveCard(data.cardId);
+    this.commonFuncs.assertCardInBoard(card, data.workspaceId, data.boardId);
+
+    const rows = await this.cardFuncs.listCardLabels(data.cardId);
+    return { labels: rows.map((row) => this.toLabelResponse(row)) };
   }
 
   private async requireWorkspaceMember(workspaceId: string, user: GrpcUser) {
