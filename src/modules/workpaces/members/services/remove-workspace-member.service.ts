@@ -56,8 +56,12 @@ export class RemoveWorkspaceMemberService {
       }
 
       const requesterIsOwner = workspace.ownerUserId === user.id;
+      // A member may always remove THEMSELVES (i.e. leave the workspace)
+      // without holding the members:manage permission. The owner is still
+      // blocked from self-removal by the owner guard below (must transfer first).
+      const isSelfRemoval = data.memberId === user.id;
 
-      if (!requesterIsOwner) {
+      if (!requesterIsOwner && !isSelfRemoval) {
         const requesterMember =
           await this.workspaceMembers.checkWorkspaceMember({
             workspaceId: data.workspaceId,
