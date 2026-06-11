@@ -14,11 +14,11 @@ import type {
   RemovePermissionsRequest,
   RemovePermissionsResponse,
 } from './types';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { GrpcUser } from '../../shared/decorators/meta.decorator';
 import { status as GrpcStatus } from '@grpc/grpc-js';
 import db from '../../shared/configs/db.config';
-import { workspaceMembers } from '../../shared/db/schema';
+import { workspaceMembers, workspaceRoles } from '../../shared/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 @Controller()
@@ -54,23 +54,43 @@ export class RolesController {
   async createRole(
     @Payload() data: CreateRoleRequest,
     @GrpcUser() user: GrpcUser,
-  ): Promise<Observable<CreateRoleResponse>> {
-    // TODO: Check permission
+  ): Promise<CreateRoleResponse> {
     const memberRole = await this.getWorkspaceMemberRole(user, data.scopeId);
 
-    const perm = this.authzService.checkPermission({
-      roleId: memberRole.authzRoleId,
-      scopeId: data.scopeId,
-      permission: 'workspace:roles:manage',
-    });
-
-    if (!perm) {
+    if (!memberRole?.authzRoleId) {
       throw new RpcException({
         code: GrpcStatus.PERMISSION_DENIED,
         message: 'Permission denied',
       });
     }
-    return this.authzService.createRole({ ...data, createdBy: user.id });
+
+    const perm = await firstValueFrom(
+      this.authzService.checkPermission({
+        roleId: memberRole.authzRoleId,
+        scopeId: data.scopeId,
+        permission: 'workspace:roles:manage',
+      }),
+    );
+
+    if (!perm?.allowed) {
+      throw new RpcException({
+        code: GrpcStatus.PERMISSION_DENIED,
+        message: 'Permission denied',
+      });
+    }
+
+    const createdRole = await firstValueFrom(
+      this.authzService.createRole({ ...data, createdBy: user.id }),
+    );
+
+    await db.insert(workspaceRoles).values({
+      workspaceId: data.scopeId,
+      authzRoleId: createdRole.roleId,
+      // isSystem: data.isSystem,
+      createdBy: user.id,
+    });
+
+    return createdRole;
   }
 
   @GrpcMethod('AuthorizationService', 'UpdateRole')

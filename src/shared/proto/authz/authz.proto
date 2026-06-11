@@ -102,7 +102,7 @@ message CreateRoleRequest {
 
   string scopeId = 3;
 
-  bool isSystem = 4;
+  // bool isSystem = 4;
 
   string createdBy = 5;
 }
