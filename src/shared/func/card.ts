@@ -345,6 +345,18 @@ export class CardFuncs {
       );
   }
 
+  /** Labels currently attached to a card (joined with the label definitions). */
+  async listCardLabels(cardId: string, tx?: DB): Promise<LabelRow[]> {
+    const client = tx || db;
+    const rows = await client
+      .select({ label: labels })
+      .from(cardLabels)
+      .innerJoin(labels, eq(cardLabels.labelId, labels.id))
+      .where(eq(cardLabels.cardId, cardId))
+      .orderBy(asc(labels.name));
+    return rows.map((r) => r.label);
+  }
+
   // ---------------------------
   // COMMENTS
   // ---------------------------

@@ -41,6 +41,7 @@ import type {
   ListCardsResponse,
   ListChecklistsResponse,
   ListColumnCardsRequest,
+  ListCardLabelsRequest,
   ListCommentsResponse,
   ListLabelsResponse,
   ListWorkspaceCardsByDateRequest,
@@ -201,6 +202,14 @@ export class CardsController {
     @GrpcUser() user: GrpcUser,
   ): Promise<ActionResponse> {
     return this.labelsCardService.removeCardLabel(data, user);
+  }
+
+  @GrpcMethod('CardService', 'ListCardLabels')
+  listCardLabels(
+    @Payload() data: ListCardLabelsRequest,
+    @GrpcUser() user: GrpcUser,
+  ): Promise<ListLabelsResponse> {
+    return this.labelsCardService.listCardLabels(data, user);
   }
 
   @GrpcMethod('CardService', 'CreateLabel')
