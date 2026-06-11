@@ -21,6 +21,7 @@ async function bootstrap() {
         'teams',
         'columns',
         'cards',
+        'authz',
       ],
       protoPath: [
         join(__dirname, '../src/shared/proto/workspace/workspace.proto'),
@@ -34,6 +35,7 @@ async function bootstrap() {
         join(__dirname, '../src/shared/proto/teams/teams.proto'),
         join(__dirname, '../src/shared/proto/columns/columns.proto'),
         join(__dirname, '../src/shared/proto/cards/cards.proto'),
+        join(__dirname, '../src/shared/proto/authz/authz.proto'),
       ],
       url: `0.0.0.0:${grpcPort}`,
       loader: {

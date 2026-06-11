@@ -6,6 +6,7 @@ import { TeamsModule } from './teams/teams.module';
 import { BoardModule } from './boards/board/board.module';
 import { ColumnsModule } from './columns/columns.module';
 import { CardsModule } from './cards/cards.module';
+import { AuthzModule } from './authz/authz.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CardsModule } from './cards/cards.module';
     BoardModule,
     ColumnsModule,
     CardsModule,
+    AuthzModule,
   ],
 })
 export class AppModule {}

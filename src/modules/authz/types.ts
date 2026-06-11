@@ -15,7 +15,7 @@ export interface CreateRoleRequest {
   name: string;
   scopeType: RoleScopeType;
   scopeId: string;
-  isSystem: boolean;
+  // isSystem: boolean;
   createdBy: string;
 }
 
