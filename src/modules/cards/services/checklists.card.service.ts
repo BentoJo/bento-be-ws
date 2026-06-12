@@ -152,6 +152,8 @@ export class ChecklistsCardService {
       position,
     });
 
+    await this.recomputeCardProgress(data.cardId);
+
     return this.toChecklistItemResponse(item);
   }
 
@@ -205,6 +207,8 @@ export class ChecklistsCardService {
         message: 'Failed to toggle checklist item',
       });
     }
+
+    await this.recomputeCardProgress(data.cardId);
 
     return this.toChecklistItemResponse(updated);
   }
@@ -330,7 +334,27 @@ export class ChecklistsCardService {
 
     await this.cardFuncs.deleteChecklistItem(data.itemId);
 
+    await this.recomputeCardProgress(data.cardId);
+
     return { success: true, message: 'Checklist item deleted successfully' };
+  }
+
+  /**
+   * Recompute the card's `progress` (0-100) from its checklist completion and
+   * persist it, so the board column card reflects checklist progress without
+   * needing to load the checklists itself.
+   */
+  private async recomputeCardProgress(cardId: string): Promise<void> {
+    const checklists = await this.cardFuncs.listChecklists(cardId);
+    let total = 0;
+    let done = 0;
+    for (const cl of checklists) {
+      const items = await this.cardFuncs.listChecklistItems(cl.id);
+      total += items.length;
+      done += items.filter((i) => i.isCompleted).length;
+    }
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    await this.cardFuncs.update(cardId, { progress: String(pct) });
   }
 
   private toChecklistResponse(

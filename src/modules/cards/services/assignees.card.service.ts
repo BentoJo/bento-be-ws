@@ -100,11 +100,23 @@ export class AssigneesCardService {
       });
     }
 
+    // The client sends the WORKSPACE member id; card_assignees.boardMemberId
+    // references board_members.id. Resolve (and auto-add to the board) so the
+    // insert doesn't fail the FK with a 500.
+    let resolvedBoardMemberId: string | null = null;
+    if (data.assigneeType === 'member' && data.boardMemberId) {
+      resolvedBoardMemberId = await this.boardFuncs.getOrCreateBoardMemberId({
+        boardId: data.boardId,
+        workspaceMemberId: data.boardMemberId,
+        workspaceId: data.workspaceId,
+      });
+    }
+
     await this.cardFuncs.addAssignee({
       workspaceId: data.workspaceId,
       cardId: data.cardId,
       assigneeType: data.assigneeType,
-      boardMemberId: data.assigneeType === 'member' ? data.boardMemberId : null,
+      boardMemberId: resolvedBoardMemberId,
       teamId: data.assigneeType === 'team' ? data.teamId : null,
       assignedBy: user.id,
     });

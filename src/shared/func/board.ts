@@ -86,6 +86,43 @@ export class BoardFuncs {
     return newMember;
   }
 
+  /**
+   * Resolve a workspace member to their board_members.id for a board,
+   * creating the board membership if it does not exist yet. Returns the
+   * board_members.id (what card_assignees.boardMemberId references).
+   */
+  async getOrCreateBoardMemberId(
+    data: { boardId: string; workspaceMemberId: string; workspaceId: string },
+    tx?: DB,
+  ): Promise<string> {
+    const client = tx || db;
+    const [existing] = await client
+      .select({ id: boardMembers.id })
+      .from(boardMembers)
+      .where(
+        and(
+          eq(boardMembers.boardId, data.boardId),
+          eq(boardMembers.workspaceMemberId, data.workspaceMemberId),
+        ),
+      )
+      .limit(1);
+
+    if (existing) return existing.id;
+
+    const [created] = await client
+      .insert(boardMembers)
+      .values({
+        boardId: data.boardId,
+        workspaceMemberId: data.workspaceMemberId,
+        workspaceId: data.workspaceId,
+        joinedAt: new Date(),
+        createdAt: new Date(),
+      })
+      .returning({ id: boardMembers.id });
+
+    return created.id;
+  }
+
   async favoriteBoard(
     data: {
       workspaceId: string;
