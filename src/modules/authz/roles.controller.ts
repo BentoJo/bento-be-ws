@@ -13,6 +13,7 @@ import type {
   AssignPermissionsResponse,
   RemovePermissionsRequest,
   RemovePermissionsResponse,
+  ListPermissionsResponse,
 } from './types';
 import { firstValueFrom, Observable } from 'rxjs';
 import { GrpcUser } from '../../shared/decorators/meta.decorator';
@@ -183,5 +184,13 @@ export class RolesController {
       });
     }
     return this.authzService.removePermissions(data);
+  }
+
+  // Catalogue of all permission descriptors (global, no scope). The gateway's
+  // authz client routes AuthorizationService calls here; this handler was
+  // missing, which made GET /workspace/:id/permissions return 501.
+  @GrpcMethod('AuthorizationService', 'ListPermissions')
+  listPermissions(): Observable<ListPermissionsResponse> {
+    return this.authzService.listPermissions();
   }
 }
