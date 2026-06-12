@@ -153,6 +153,7 @@ export interface CardAssignee {
   teamId?: string | null;
   assignedBy: string;
   createdAt: string;
+  workspaceMemberId?: string | null;
 }
 
 export interface ListCardAssigneesResponse {

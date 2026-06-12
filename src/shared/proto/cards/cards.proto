@@ -315,6 +315,10 @@ message CardAssignee {
   string assignedBy = 6;
 
   string createdAt = 7;
+
+  // Workspace member behind a 'member' assignee, so clients can match/display
+  // it against the workspace member list (board_members.workspace_member_id).
+  optional string workspaceMemberId = 8;
 }
 
 message ListCardAssigneesResponse {

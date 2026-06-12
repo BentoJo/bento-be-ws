@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
+  boardMembers,
   cardAssignees,
   cardChecklistItems,
   cardChecklists,
@@ -251,13 +252,24 @@ export class CardFuncs {
       );
   }
 
-  async listAssignees(cardId: string, tx?: DB): Promise<CardAssigneeRow[]> {
+  async listAssignees(
+    cardId: string,
+    tx?: DB,
+  ): Promise<(CardAssigneeRow & { workspaceMemberId: string | null })[]> {
     const client = tx || db;
-    return client
-      .select()
+    const rows = await client
+      .select({
+        assignee: cardAssignees,
+        workspaceMemberId: boardMembers.workspaceMemberId,
+      })
       .from(cardAssignees)
+      .leftJoin(boardMembers, eq(cardAssignees.boardMemberId, boardMembers.id))
       .where(eq(cardAssignees.cardId, cardId))
       .orderBy(asc(cardAssignees.createdAt));
+    return rows.map((r) => ({
+      ...r.assignee,
+      workspaceMemberId: r.workspaceMemberId ?? null,
+    }));
   }
 
   // ---------------------------

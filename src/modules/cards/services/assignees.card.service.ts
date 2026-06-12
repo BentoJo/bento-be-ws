@@ -228,6 +228,7 @@ export class AssigneesCardService {
       createdAt: row.createdAt
         ? row.createdAt.toISOString()
         : new Date().toISOString(),
+      workspaceMemberId: row.workspaceMemberId ?? null,
     }));
 
     return { assignees };
